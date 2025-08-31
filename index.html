@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>بطاقات نافذة A4 مع التحكم في الهوامش</title>
+<title>بطاقات نافذة A4 مع التحكم في الهوامش الداخلية</title>
 <style>
   /* تنسيقات الطباعة */
   @media print {
@@ -19,7 +19,6 @@
       page-break-inside: avoid;
       display: grid !important;
       gap: 5mm !important;
-      grid-template-columns: repeat(3, 1fr) !important;
     }
     
     .controls, .image-controls, .container, .button-group, h1, .print-warning {
@@ -31,7 +30,6 @@
       border: 1px solid #ccc !important;
       padding: 0 !important;
       margin: 0 !important;
-      height: 40mm !important;
       display: flex !important;
       justify-content: center !important;
       align-items: center !important;
@@ -41,7 +39,7 @@
     
     .a4-page {
       box-shadow: none !important;
-      padding: 15mm !important;
+      padding: 0 !important;
       margin: 0 !important;
       width: 210mm !important;
       min-height: 297mm !important;
@@ -176,12 +174,11 @@
   .a4-page {
     width: 210mm;
     min-height: 297mm;
-    padding: 15mm;
+    padding: 10mm;
     background: white;
     box-shadow: 0 2px 15px rgba(0, 0, 0, 0.2);
     margin: 0 auto;
     box-sizing: border-box;
-    transition: padding 0.3s ease;
   }
 
   .grid {
@@ -195,7 +192,6 @@
 
   .card {
     border: 1px solid #ddd;
-    padding: 5px;
     background: white;
     position: relative;
     box-sizing: border-box;
@@ -205,7 +201,8 @@
     justify-content: center;
     align-items: center;
     margin: 0;
-    height: 40mm;
+    padding: 5mm;
+    transition: padding 0.3s ease;
   }
 
   .card-image {
@@ -223,7 +220,6 @@
     position: absolute;
     font-weight: bold;
     z-index: 2;
-    padding: 3px 8px;
     color: #d32f2f;
     text-shadow: none;
     box-shadow: none;
@@ -288,7 +284,7 @@
 <body>
 
 <div class="container">
-  <h1>بطاقات نافذة A4 مع التحكم في الهوامش</h1>
+  <h1>بطاقات نافذة A4 مع التحكم في الهوامش الداخلية</h1>
   
   <div class="print-warning">
     تأكد من تعيين هوامش الطباعة على "الافتراضي" أو "بلا هوامش" في إعدادات الطباعة للحصول على أفضل نتيجة.
@@ -314,34 +310,27 @@
     </div>
 
     <div class="control-group margin-control">
-      <h3>هوامش الصفحة (مم)</h3>
+      <h3>هوامش البطاقات الداخلية (مم)</h3>
       <label>
-        الهامش العلوي
-        <input type="range" id="marginTop" min="0" max="30" value="15">
-        <span class="slider-value" id="marginTopValue">15mm</span>
+        الهامش الداخلي للبطاقة
+        <input type="range" id="cardPadding" min="0" max="20" value="5">
+        <span class="slider-value" id="cardPaddingValue">5mm</span>
       </label>
       
       <label>
-        الهامش السفلي
-        <input type="range" id="marginBottom" min="0" max="30" value="15">
-        <span class="slider-value" id="marginBottomValue">15mm</span>
+        هامش الصورة الأفقي (٪)
+        <input type="range" id="imageMarginX" min="0" max="20" value="0">
+        <span class="slider-value" id="imageMarginXValue">0%</span>
       </label>
       
       <label>
-        الهامش الأيمن
-        <input type="range" id="marginRight" min="0" max="30" value="15">
-        <span class="slider-value" id="marginRightValue">15mm</span>
-      </label>
-      
-      <label>
-        الهامش الأيسر
-        <input type="range" id="marginLeft" min="0" max="30" value="15">
-        <span class="slider-value" id="marginLeftValue">15mm</span>
+        هامش الصورة العمودي (٪)
+        <input type="range" id="imageMarginY" min="0" max="20" value="0">
+        <span class="slider-value" id="imageMarginYValue">0%</span>
       </label>
       
       <div class="margin-preview">
-        <div>الهوامش الحالية: <span id="currentMargins">15mm 15mm 15mm 15mm</span></div>
-        <div>(علوي - سفلي - يمين - يسار)</div>
+        <div>الهوامش الحالية: <span id="currentMargins">5mm (بطاقة) - 0% (صورة)</span></div>
       </div>
     </div>
 
@@ -424,25 +413,41 @@ function printCards() {
   window.print();
 }
 
-// تحديث هوامش الصفحة
-function updatePageMargins() {
-  const marginTop = document.getElementById("marginTop").value;
-  const marginBottom = document.getElementById("marginBottom").value;
-  const marginRight = document.getElementById("marginRight").value;
-  const marginLeft = document.getElementById("marginLeft").value;
+// تحديث هوامش البطاقات
+function updateCardMargins() {
+  const cardPadding = document.getElementById("cardPadding").value;
+  const imageMarginX = document.getElementById("imageMarginX").value;
+  const imageMarginY = document.getElementById("imageMarginY").value;
   
-  a4Page.style.padding = `${marginTop}mm ${marginRight}mm ${marginBottom}mm ${marginLeft}mm`;
+  // تطبيق الهوامش على جميع البطاقات
+  const cards = document.querySelectorAll('.card');
+  cards.forEach(card => {
+    card.style.padding = `${cardPadding}mm`;
+  });
+  
+  // تطبيق هوامش الصورة
+  const images = document.querySelectorAll('.card-image');
+  images.forEach(img => {
+    img.style.marginLeft = `${imageMarginX}%`;
+    img.style.marginRight = `${imageMarginX}%`;
+    img.style.marginTop = `${imageMarginY}%`;
+    img.style.marginBottom = `${imageMarginY}%`;
+  });
   
   // تحديث عرض الهوامش الحالية
   document.getElementById("currentMargins").textContent = 
-    `${marginTop}mm ${marginBottom}mm ${marginRight}mm ${marginLeft}mm`;
+    `${cardPadding}mm (بطاقة) - ${imageMarginX}% (صورة)`;
   
   // تحديث تنسيقات الطباعة
-  updatePrintStyles(marginTop, marginBottom, marginRight, marginLeft);
+  updatePrintStyles();
 }
 
 // تحديث تنسيقات الطباعة
-function updatePrintStyles(top, bottom, right, left) {
+function updatePrintStyles() {
+  const cols = parseInt(document.getElementById("columns").value) || 3;
+  const gap = parseInt(document.getElementById("gap").value) || 5;
+  const cardPadding = document.getElementById("cardPadding").value;
+  
   // إنشاء أو تحديث نمط الطباعة
   let printStyle = document.getElementById('printStyles');
   if (!printStyle) {
@@ -453,8 +458,12 @@ function updatePrintStyles(top, bottom, right, left) {
   
   printStyle.textContent = `
     @media print {
-      .a4-page {
-        padding: ${top}mm ${right}mm ${bottom}mm ${left}mm !important;
+      .grid {
+        grid-template-columns: repeat(${cols}, 1fr) !important;
+        gap: ${gap}mm !important;
+      }
+      .card {
+        padding: ${cardPadding}mm !important;
       }
     }
   `;
@@ -467,28 +476,33 @@ document.addEventListener('DOMContentLoaded', function() {
   updateSliderValue('numberX', 'numberXValue', '%');
   updateSliderValue('numberY', 'numberYValue', '%');
   updateSliderValue('imageSize', 'imageSizeValue', '%');
-  updateSliderValue('marginTop', 'marginTopValue', 'mm');
-  updateSliderValue('marginBottom', 'marginBottomValue', 'mm');
-  updateSliderValue('marginRight', 'marginRightValue', 'mm');
-  updateSliderValue('marginLeft', 'marginLeftValue', 'mm');
+  updateSliderValue('cardPadding', 'cardPaddingValue', 'mm');
+  updateSliderValue('imageMarginX', 'imageMarginXValue', '%');
+  updateSliderValue('imageMarginY', 'imageMarginYValue', '%');
   
   // إعداد رفع الصورة
   document.getElementById('imageUpload').addEventListener('change', handleImageUpload);
   
   // إضافة مستمعي الأحداث للحقول الرقمية
-  document.getElementById('columns').addEventListener('input', generateCards);
+  document.getElementById('columns').addEventListener('input', function() {
+    generateCards();
+    updatePrintStyles();
+  });
   document.getElementById('rows').addEventListener('input', generateCards);
-  document.getElementById('gap').addEventListener('input', generateCards);
+  document.getElementById('gap').addEventListener('input', function() {
+    grid.style.gap = `${this.value}mm`;
+    updatePrintStyles();
+  });
   
-  // إضافة مستمعي الأحداث لهوامش الصفحة
-  document.getElementById('marginTop').addEventListener('input', updatePageMargins);
-  document.getElementById('marginBottom').addEventListener('input', updatePageMargins);
-  document.getElementById('marginRight').addEventListener('input', updatePageMargins);
-  document.getElementById('marginLeft').addEventListener('input', updatePageMargins);
+  // إضافة مستمعي الأحداث لهوامش البطاقات
+  document.getElementById('cardPadding').addEventListener('input', updateCardMargins);
+  document.getElementById('imageMarginX').addEventListener('input', updateCardMargins);
+  document.getElementById('imageMarginY').addEventListener('input', updateCardMargins);
   
   // إنشاء البطاقات الأولية وتحديث الهوامش
   generateCards();
-  updatePageMargins();
+  updateCardMargins();
+  updatePrintStyles();
 });
 
 // دالة لتحديث عرض قيمة المتغير المنزلق
@@ -504,8 +518,10 @@ function updateSliderValue(sliderId, valueId, suffix) {
     valueElement.textContent = this.value + suffix;
     
     // إذا كان المنزلق خاص بالهوامش، قم بتحديث الهوامش
-    if (sliderId.includes('margin')) {
-      updatePageMargins();
+    if (sliderId.includes('margin') || sliderId.includes('Padding')) {
+      updateCardMargins();
+    } else if (sliderId.includes('gap') || sliderId.includes('columns')) {
+      updatePrintStyles();
     } else {
       generateCards();
     }
@@ -541,6 +557,7 @@ function handleImageUpload(e) {
       
       // إنشاء البطاقات تلقائياً بعد تحميل الصورة
       generateCards();
+      updateCardMargins();
     };
     img.src = uploadedImage;
   };
@@ -619,6 +636,9 @@ function generateCards() {
       cardCounter++;
     }
   }
+  
+  // تطبيق الهوامش بعد إنشاء البطاقات
+  updateCardMargins();
 }
 
 // دالة إعادة تعيين الإعدادات
@@ -634,20 +654,18 @@ function resetSettings() {
   document.getElementById("autoAspectRatio").checked = true;
   
   // إعادة تعيين الهوامش
-  document.getElementById("marginTop").value = 15;
-  document.getElementById("marginBottom").value = 15;
-  document.getElementById("marginRight").value = 15;
-  document.getElementById("marginLeft").value = 15;
+  document.getElementById("cardPadding").value = 5;
+  document.getElementById("imageMarginX").value = 0;
+  document.getElementById("imageMarginY").value = 0;
   
   // تحديث قيم المتغيرات المنزلقة المعروضة
   document.getElementById("numberSizeValue").textContent = "24px";
   document.getElementById("numberXValue").textContent = "50%";
   document.getElementById("numberYValue").textContent = "10%";
   document.getElementById("imageSizeValue").textContent = "80%";
-  document.getElementById("marginTopValue").textContent = "15mm";
-  document.getElementById("marginBottomValue").textContent = "15mm";
-  document.getElementById("marginRightValue").textContent = "15mm";
-  document.getElementById("marginLeftValue").textContent = "15mm";
+  document.getElementById("cardPaddingValue").textContent = "5mm";
+  document.getElementById("imageMarginXValue").textContent = "0%";
+  document.getElementById("imageMarginYValue").textContent = "0%";
   
   // إعادة تعيين الصورة
   uploadedImage = null;
@@ -658,7 +676,8 @@ function resetSettings() {
   document.getElementById("imageDimensions").textContent = "";
   
   generateCards();
-  updatePageMargins();
+  updateCardMargins();
+  updatePrintStyles();
 }
 
 // إضافة مستمعي الأحداث للتحكم الفوري
