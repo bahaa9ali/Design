@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>بطاقات نافذة A4 مع تحسينات الطباعة</title>
+<title>بطاقات نافذة A4 مع التحكم في الأعمدة والصفوف</title>
 <style>
   /* تنسيقات الطباعة */
   @media print {
@@ -29,7 +29,6 @@
       border: none !important;
       padding: 0 !important;
       margin: 0 !important;
-      height: 40mm !important;
     }
     
     .a4-page {
@@ -51,7 +50,7 @@
     font-family: "Tahoma", Arial, sans-serif;
     background: #f0f2f5;
     margin: 0;
-    padding: 0;
+    padding: 15px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -60,10 +59,10 @@
 
   .container {
     background: white;
-    border-radius: 0;
-    box-shadow: none;
-    padding: 10px;
-    margin-bottom: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+    margin-bottom: 15px;
     width: 100%;
     max-width: 210mm;
   }
@@ -71,26 +70,26 @@
   h1 {
     color: #1976d2;
     text-align: center;
-    margin: 10px 0;
+    margin: 10px 0 20px 0;
     font-size: 1.5em;
   }
 
   /* تنسيقات عناصر التحكم */
   .controls, .image-controls {
-    margin-bottom: 10px;
+    margin-bottom: 15px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 15px;
   }
 
   .control-group {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 15px;
     align-items: center;
-    padding: 10px;
+    padding: 15px;
     background: #f9f9f9;
-    border-radius: 0;
+    border-radius: 5px;
   }
 
   .control-group h3 {
@@ -98,46 +97,46 @@
     width: 100%;
     color: #d32f2f;
     border-bottom: 1px solid #ddd;
-    padding-bottom: 5px;
-    font-size: 1em;
+    padding-bottom: 8px;
+    font-size: 1.1em;
   }
 
   label {
     display: flex;
     flex-direction: column;
     font-weight: bold;
-    font-size: 12px;
-    min-width: 100px;
+    font-size: 13px;
+    min-width: 120px;
   }
 
   input, button, select {
-    padding: 6px 8px;
-    font-size: 12px;
+    padding: 8px 10px;
+    font-size: 13px;
     border: 1px solid #ddd;
-    border-radius: 2px;
-    margin-top: 3px;
+    border-radius: 4px;
+    margin-top: 5px;
     font-family: "Tahoma", Arial, sans-serif;
   }
 
   input[type="range"] {
     padding: 0;
-    margin-top: 5px;
+    margin-top: 8px;
   }
 
   input[type="file"] {
-    padding: 3px;
+    padding: 5px;
   }
 
   button {
     background: #1976d2;
     color: white;
     border: none;
-    border-radius: 2px;
+    border-radius: 4px;
     cursor: pointer;
-    padding: 8px 10px;
+    padding: 10px 15px;
     transition: background 0.3s;
-    min-width: 100px;
-    font-size: 12px;
+    min-width: 120px;
+    font-size: 13px;
   }
 
   button:hover {
@@ -146,24 +145,25 @@
 
   .button-group {
     display: flex;
-    gap: 8px;
+    gap: 10px;
     flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 10px;
   }
 
   /* تنسيقات البطاقات */
   .a4-page {
     width: 210mm;
     min-height: 297mm;
-    padding: 0;
+    padding: 10mm;
     background: white;
-    box-shadow: none;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.2);
     margin: 0 auto;
     box-sizing: border-box;
   }
 
   .grid {
     display: grid;
-    gap: 0;
     width: 100%;
     height: 100%;
     padding: 0;
@@ -171,16 +171,13 @@
   }
 
   .card {
-    border: 1px solid #aaa;
-    border-radius: 0;
-    padding: 0;
+    border: 1px solid #ddd;
+    padding: 5px;
     background: white;
-    height: 40mm;
     position: relative;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    box-shadow: none;
     overflow: hidden;
     justify-content: center;
     align-items: center;
@@ -202,43 +199,56 @@
     position: absolute;
     font-weight: bold;
     z-index: 2;
-    padding: 0;
-    margin: 0;
+    padding: 3px 8px;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 3px;
   }
 
   .slider-value {
     display: inline-block;
-    min-width: 25px;
+    min-width: 30px;
     text-align: center;
     font-weight: bold;
-    font-size: 12px;
+    font-size: 13px;
   }
 
   .image-preview {
     max-width: 100%;
-    max-height: 120px;
-    margin-top: 5px;
+    max-height: 150px;
+    margin-top: 8px;
     border: 1px dashed #ccc;
     display: none;
+  }
+
+  .dimensions-info {
+    font-size: 12px;
+    color: #666;
+    margin-top: 5px;
+    text-align: center;
   }
 </style>
 </head>
 <body>
 
 <div class="container">
-  <h1>بطاقات نافذة A4 مع تحسينات الطباعة</h1>
+  <h1>بطاقات نافذة A4 مع التحكم في الأعمدة والصفوف</h1>
   
   <div class="controls">
     <div class="control-group">
       <h3>الإعدادات الأساسية</h3>
       <label>
-        عدد البطاقات
-        <input type="number" id="maxNumber" placeholder="عدد البطاقات" min="1" value="6">
+        عدد الأعمدة
+        <input type="number" id="columns" placeholder="عدد الأعمدة" min="1" max="10" value="3">
       </label>
       
       <label>
-        عدد الأعمدة
-        <input type="number" id="columns" placeholder="عدد الأعمدة" min="1" value="3">
+        عدد الصفوف
+        <input type="number" id="rows" placeholder="عدد الصفوف" min="1" max="10" value="2">
+      </label>
+      
+      <label>
+        المسافة بين البطاقات (مم)
+        <input type="number" id="gap" placeholder="المسافة" min="0" max="20" value="5">
       </label>
     </div>
 
@@ -276,24 +286,13 @@
         اختر صورة للبطاقات
         <input type="file" id="imageUpload" accept="image/*">
         <img id="imagePreview" class="image-preview" alt="معاينة الصورة">
+        <div id="imageDimensions" class="dimensions-info"></div>
       </label>
       
       <label>
         حجم الصورة (٪)
         <input type="range" id="imageSize" min="10" max="100" value="80">
         <span class="slider-value" id="imageSizeValue">80%</span>
-      </label>
-      
-      <label>
-        هامش أفقي (px)
-        <input type="range" id="imageMarginX" min="-50" max="50" value="0">
-        <span class="slider-value" id="imageMarginXValue">0px</span>
-      </label>
-      
-      <label>
-        هامش عمودي (px)
-        <input type="range" id="imageMarginY" min="-50" max="50" value="0">
-        <span class="slider-value" id="imageMarginYValue">0px</span>
       </label>
 
       <label>
@@ -338,11 +337,14 @@ document.addEventListener('DOMContentLoaded', function() {
   updateSliderValue('numberX', 'numberXValue', '%');
   updateSliderValue('numberY', 'numberYValue', '%');
   updateSliderValue('imageSize', 'imageSizeValue', '%');
-  updateSliderValue('imageMarginX', 'imageMarginXValue', 'px');
-  updateSliderValue('imageMarginY', 'imageMarginYValue', 'px');
   
   // إعداد رفع الصورة
   document.getElementById('imageUpload').addEventListener('change', handleImageUpload);
+  
+  // إضافة مستمعي الأحداث للحقول الرقمية
+  document.getElementById('columns').addEventListener('input', generateCards);
+  document.getElementById('rows').addEventListener('input', generateCards);
+  document.getElementById('gap').addEventListener('input', generateCards);
   
   // إنشاء البطاقات الأولية
   generateCards();
@@ -383,6 +385,10 @@ function handleImageUpload(e) {
       imageNaturalWidth = this.naturalWidth;
       imageNaturalHeight = this.naturalHeight;
       
+      // عرض معلومات الأبعاد
+      document.getElementById('imageDimensions').textContent = 
+        `أبعاد الصورة: ${imageNaturalWidth} × ${imageNaturalHeight} بكسل`;
+      
       document.getElementById('imagePreview').src = uploadedImage;
       document.getElementById('imagePreview').style.display = 'block';
       
@@ -396,84 +402,88 @@ function handleImageUpload(e) {
 
 // دالة إنشاء البطاقات
 function generateCards() {
-  const maxNum = parseInt(document.getElementById("maxNumber").value) || 6;
   const cols = parseInt(document.getElementById("columns").value) || 3;
+  const rows = parseInt(document.getElementById("rows").value) || 2;
+  const gap = parseInt(document.getElementById("gap").value) || 5;
   const numberSize = parseInt(document.getElementById("numberSize").value) || 24;
   const numberColor = document.getElementById("numberColor").value;
   const numberX = parseInt(document.getElementById("numberX").value) || 50;
   const numberY = parseInt(document.getElementById("numberY").value) || 10;
   const imageSize = parseInt(document.getElementById("imageSize").value) || 80;
-  const imageMarginX = parseInt(document.getElementById("imageMarginX").value) || 0;
-  const imageMarginY = parseInt(document.getElementById("imageMarginY").value) || 0;
   const autoAspectRatio = document.getElementById("autoAspectRatio").checked;
 
-  // ضبط عدد الأعمدة
+  // حساب عدد البطاقات الإجمالي
+  const totalCards = cols * rows;
+  
+  // ضبط عدد الأعمدة والمسافات
   grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+  grid.style.gap = `${gap}mm`;
 
   // مسح البطاقات القديمة
   grid.innerHTML = '';
 
-  for (let i = 1; i <= maxNum; i++) {
-    const card = document.createElement("div");
-    card.className = "card";
+  let cardCounter = 1;
+  
+  for (let i = 0; i < rows; i++) {
+    for (let j = 0; j < cols; j++) {
+      const card = document.createElement("div");
+      card.className = "card";
 
-    // إضافة الصورة إذا تم تحميلها
-    if (uploadedImage) {
-      const img = document.createElement("img");
-      img.className = "card-image";
-      img.src = uploadedImage;
-      
-      // إذا كانت خاصية الحفاظ على التناسب مفعلة وكانت الصورة أطول من عرضها
-      if (autoAspectRatio && imageNaturalHeight > imageNaturalWidth) {
-        // للصور الطويلة: جعل العرض يتناسب مع الحجم المحدد والطول يتكيف تلقائياً
-        img.style.width = `${imageSize}%`;
-        img.style.height = 'auto';
+      // إضافة الصورة إذا تم تحميلها
+      if (uploadedImage) {
+        const img = document.createElement("img");
+        img.className = "card-image";
+        img.src = uploadedImage;
+        
+        // إذا كانت خاصية الحفاظ على التناسب مفعلة وكانت الصورة أطول من عرضها
+        if (autoAspectRatio && imageNaturalHeight > imageNaturalWidth) {
+          // للصور الطويلة: جعل العرض يتناسب مع الحجم المحدد والطول يتكيف تلقائياً
+          img.style.width = `${imageSize}%`;
+          img.style.height = 'auto';
+        } else {
+          // للصور العادية: استخدام الحجم المحدد لكلا البعدين
+          img.style.width = `${imageSize}%`;
+          img.style.height = `${imageSize}%`;
+        }
+        
+        card.appendChild(img);
       } else {
-        // للصور العادية: استخدام الحجم المحدد لكلا البعدين
-        img.style.width = `${imageSize}%`;
-        img.style.height = `${imageSize}%`;
+        // إذا لم يتم تحميل صورة، عرض رسالة
+        const message = document.createElement("div");
+        message.textContent = "No image";
+        message.style.color = "#999";
+        message.style.fontStyle = "italic";
+        card.appendChild(message);
       }
-      
-      img.style.marginLeft = `${imageMarginX}px`;
-      img.style.marginRight = `${imageMarginX}px`;
-      img.style.marginTop = `${imageMarginY}px`;
-      img.style.marginBottom = `${imageMarginY}px`;
-      card.appendChild(img);
-    } else {
-      // إذا لم يتم تحميل صورة، عرض رسالة
-      const message = document.createElement("div");
-      message.textContent = "No image";
-      message.style.color = "#999";
-      message.style.fontStyle = "italic";
-      card.appendChild(message);
-    }
 
-    // إضافة الرقم إلى البطاقة (بالعربية)
-    const numberElement = document.createElement("div");
-    numberElement.className = "card-number";
-    numberElement.textContent = toArabicNumbers(i);
-    numberElement.style.fontSize = `${numberSize}px`;
-    numberElement.style.color = numberColor;
-    numberElement.style.left = `${numberX}%`;
-    numberElement.style.top = `${numberY}%`;
-    numberElement.style.transform = 'translate(-50%, -50%)';
-    
-    card.appendChild(numberElement);
-    grid.appendChild(card);
+      // إضافة الرقم إلى البطاقة (بالعربية)
+      const numberElement = document.createElement("div");
+      numberElement.className = "card-number";
+      numberElement.textContent = toArabicNumbers(cardCounter);
+      numberElement.style.fontSize = `${numberSize}px`;
+      numberElement.style.color = numberColor;
+      numberElement.style.left = `${numberX}%`;
+      numberElement.style.top = `${numberY}%`;
+      numberElement.style.transform = 'translate(-50%, -50%)';
+      
+      card.appendChild(numberElement);
+      grid.appendChild(card);
+      
+      cardCounter++;
+    }
   }
 }
 
 // دالة إعادة تعيين الإعدادات
 function resetSettings() {
-  document.getElementById("maxNumber").value = 6;
   document.getElementById("columns").value = 3;
+  document.getElementById("rows").value = 2;
+  document.getElementById("gap").value = 5;
   document.getElementById("numberSize").value = 24;
   document.getElementById("numberColor").value = "#d32f2f";
   document.getElementById("numberX").value = 50;
   document.getElementById("numberY").value = 10;
   document.getElementById("imageSize").value = 80;
-  document.getElementById("imageMarginX").value = 0;
-  document.getElementById("imageMarginY").value = 0;
   document.getElementById("autoAspectRatio").checked = true;
   
   // تحديث قيم المتغيرات المنزلقة المعروضة
@@ -481,8 +491,6 @@ function resetSettings() {
   document.getElementById("numberXValue").textContent = "50%";
   document.getElementById("numberYValue").textContent = "10%";
   document.getElementById("imageSizeValue").textContent = "80%";
-  document.getElementById("imageMarginXValue").textContent = "0px";
-  document.getElementById("imageMarginYValue").textContent = "0px";
   
   // إعادة تعيين الصورة
   uploadedImage = null;
@@ -490,6 +498,7 @@ function resetSettings() {
   imageNaturalHeight = 0;
   document.getElementById("imageUpload").value = "";
   document.getElementById("imagePreview").style.display = "none";
+  document.getElementById("imageDimensions").textContent = "";
   
   generateCards();
 }
@@ -500,11 +509,7 @@ document.getElementById('numberColor').addEventListener('input', generateCards);
 document.getElementById('numberX').addEventListener('input', generateCards);
 document.getElementById('numberY').addEventListener('input', generateCards);
 document.getElementById('imageSize').addEventListener('input', generateCards);
-document.getElementById('imageMarginX').addEventListener('input', generateCards);
-document.getElementById('imageMarginY').addEventListener('input', generateCards);
 document.getElementById('autoAspectRatio').addEventListener('change', generateCards);
-document.getElementById('maxNumber').addEventListener('input', generateCards);
-document.getElementById('columns').addEventListener('input', generateCards);
 </script>
 
 </body>
