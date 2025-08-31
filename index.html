@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>بطاقات نافذة A4 مع تحسينات الطباعة</title>
+<title>بطاقات نافذة A4 مع التحكم في الهوامش</title>
 <style>
   /* تنسيقات الطباعة */
   @media print {
@@ -22,7 +22,7 @@
       grid-template-columns: repeat(3, 1fr) !important;
     }
     
-    .controls, .image-controls, .container, .button-group, h1 {
+    .controls, .image-controls, .container, .button-group, h1, .print-warning {
       display: none !important;
     }
     
@@ -181,6 +181,7 @@
     box-shadow: 0 2px 15px rgba(0, 0, 0, 0.2);
     margin: 0 auto;
     box-sizing: border-box;
+    transition: padding 0.3s ease;
   }
 
   .grid {
@@ -224,7 +225,6 @@
     z-index: 2;
     padding: 3px 8px;
     color: #d32f2f;
-    /* إزالة الظل */
     text-shadow: none;
     box-shadow: none;
     background: transparent;
@@ -263,12 +263,32 @@
     border-radius: 4px;
     border: 1px dashed #ffd54f;
   }
+  
+  .margin-control {
+    background: #e3f2fd;
+    border-left: 4px solid #1976d2;
+  }
+  
+  .margin-preview {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    padding: 10px;
+    background: #f5f5f5;
+    border-radius: 4px;
+    font-size: 13px;
+  }
+  
+  .margin-preview span {
+    font-weight: bold;
+    color: #1976d2;
+  }
 </style>
 </head>
 <body>
 
 <div class="container">
-  <h1>بطاقات نافذة A4 مع تحسينات الطباعة</h1>
+  <h1>بطاقات نافذة A4 مع التحكم في الهوامش</h1>
   
   <div class="print-warning">
     تأكد من تعيين هوامش الطباعة على "الافتراضي" أو "بلا هوامش" في إعدادات الطباعة للحصول على أفضل نتيجة.
@@ -291,6 +311,38 @@
         المسافة بين البطاقات (مم)
         <input type="number" id="gap" placeholder="المسافة" min="0" max="20" value="5">
       </label>
+    </div>
+
+    <div class="control-group margin-control">
+      <h3>هوامش الصفحة (مم)</h3>
+      <label>
+        الهامش العلوي
+        <input type="range" id="marginTop" min="0" max="30" value="15">
+        <span class="slider-value" id="marginTopValue">15mm</span>
+      </label>
+      
+      <label>
+        الهامش السفلي
+        <input type="range" id="marginBottom" min="0" max="30" value="15">
+        <span class="slider-value" id="marginBottomValue">15mm</span>
+      </label>
+      
+      <label>
+        الهامش الأيمن
+        <input type="range" id="marginRight" min="0" max="30" value="15">
+        <span class="slider-value" id="marginRightValue">15mm</span>
+      </label>
+      
+      <label>
+        الهامش الأيسر
+        <input type="range" id="marginLeft" min="0" max="30" value="15">
+        <span class="slider-value" id="marginLeftValue">15mm</span>
+      </label>
+      
+      <div class="margin-preview">
+        <div>الهوامش الحالية: <span id="currentMargins">15mm 15mm 15mm 15mm</span></div>
+        <div>(علوي - سفلي - يمين - يسار)</div>
+      </div>
     </div>
 
     <div class="control-group">
@@ -350,12 +402,13 @@
   </div>
 </div>
 
-<div class="a4-page">
+<div class="a4-page" id="a4Page">
   <div class="grid" id="cardsGrid"></div>
 </div>
 
 <script>
 const grid = document.getElementById("cardsGrid");
+const a4Page = document.getElementById("a4Page");
 let uploadedImage = null;
 let imageNaturalWidth = 0;
 let imageNaturalHeight = 0;
@@ -371,6 +424,42 @@ function printCards() {
   window.print();
 }
 
+// تحديث هوامش الصفحة
+function updatePageMargins() {
+  const marginTop = document.getElementById("marginTop").value;
+  const marginBottom = document.getElementById("marginBottom").value;
+  const marginRight = document.getElementById("marginRight").value;
+  const marginLeft = document.getElementById("marginLeft").value;
+  
+  a4Page.style.padding = `${marginTop}mm ${marginRight}mm ${marginBottom}mm ${marginLeft}mm`;
+  
+  // تحديث عرض الهوامش الحالية
+  document.getElementById("currentMargins").textContent = 
+    `${marginTop}mm ${marginBottom}mm ${marginRight}mm ${marginLeft}mm`;
+  
+  // تحديث تنسيقات الطباعة
+  updatePrintStyles(marginTop, marginBottom, marginRight, marginLeft);
+}
+
+// تحديث تنسيقات الطباعة
+function updatePrintStyles(top, bottom, right, left) {
+  // إنشاء أو تحديث نمط الطباعة
+  let printStyle = document.getElementById('printStyles');
+  if (!printStyle) {
+    printStyle = document.createElement('style');
+    printStyle.id = 'printStyles';
+    document.head.appendChild(printStyle);
+  }
+  
+  printStyle.textContent = `
+    @media print {
+      .a4-page {
+        padding: ${top}mm ${right}mm ${bottom}mm ${left}mm !important;
+      }
+    }
+  `;
+}
+
 // تهيئة القيم عند التحميل
 document.addEventListener('DOMContentLoaded', function() {
   // تحديث قيم المتغيرات المنزلقة
@@ -378,6 +467,10 @@ document.addEventListener('DOMContentLoaded', function() {
   updateSliderValue('numberX', 'numberXValue', '%');
   updateSliderValue('numberY', 'numberYValue', '%');
   updateSliderValue('imageSize', 'imageSizeValue', '%');
+  updateSliderValue('marginTop', 'marginTopValue', 'mm');
+  updateSliderValue('marginBottom', 'marginBottomValue', 'mm');
+  updateSliderValue('marginRight', 'marginRightValue', 'mm');
+  updateSliderValue('marginLeft', 'marginLeftValue', 'mm');
   
   // إعداد رفع الصورة
   document.getElementById('imageUpload').addEventListener('change', handleImageUpload);
@@ -387,8 +480,15 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('rows').addEventListener('input', generateCards);
   document.getElementById('gap').addEventListener('input', generateCards);
   
-  // إنشاء البطاقات الأولية
+  // إضافة مستمعي الأحداث لهوامش الصفحة
+  document.getElementById('marginTop').addEventListener('input', updatePageMargins);
+  document.getElementById('marginBottom').addEventListener('input', updatePageMargins);
+  document.getElementById('marginRight').addEventListener('input', updatePageMargins);
+  document.getElementById('marginLeft').addEventListener('input', updatePageMargins);
+  
+  // إنشاء البطاقات الأولية وتحديث الهوامش
   generateCards();
+  updatePageMargins();
 });
 
 // دالة لتحديث عرض قيمة المتغير المنزلق
@@ -402,7 +502,13 @@ function updateSliderValue(sliderId, valueId, suffix) {
   // إضافة مستمع الحدث للتحديث المستمر
   slider.addEventListener('input', function() {
     valueElement.textContent = this.value + suffix;
-    generateCards(); // إعادة إنشاء البطاقات عند التغيير
+    
+    // إذا كان المنزلق خاص بالهوامش، قم بتحديث الهوامش
+    if (sliderId.includes('margin')) {
+      updatePageMargins();
+    } else {
+      generateCards();
+    }
   });
 }
 
@@ -527,11 +633,21 @@ function resetSettings() {
   document.getElementById("imageSize").value = 80;
   document.getElementById("autoAspectRatio").checked = true;
   
+  // إعادة تعيين الهوامش
+  document.getElementById("marginTop").value = 15;
+  document.getElementById("marginBottom").value = 15;
+  document.getElementById("marginRight").value = 15;
+  document.getElementById("marginLeft").value = 15;
+  
   // تحديث قيم المتغيرات المنزلقة المعروضة
   document.getElementById("numberSizeValue").textContent = "24px";
   document.getElementById("numberXValue").textContent = "50%";
   document.getElementById("numberYValue").textContent = "10%";
   document.getElementById("imageSizeValue").textContent = "80%";
+  document.getElementById("marginTopValue").textContent = "15mm";
+  document.getElementById("marginBottomValue").textContent = "15mm";
+  document.getElementById("marginRightValue").textContent = "15mm";
+  document.getElementById("marginLeftValue").textContent = "15mm";
   
   // إعادة تعيين الصورة
   uploadedImage = null;
@@ -542,6 +658,7 @@ function resetSettings() {
   document.getElementById("imageDimensions").textContent = "";
   
   generateCards();
+  updatePageMargins();
 }
 
 // إضافة مستمعي الأحداث للتحكم الفوري
