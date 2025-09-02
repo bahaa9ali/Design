@@ -1,1048 +1,295 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تطبيق الصور مع تحسينات</title>
-    <link href="https://fonts.googleapis.com/css2?family=Amiri&display=swap" rel="stylesheet">
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Amiri', serif;
-        }
-        
-        body {
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-            padding: 20px;
-            color: #333;
-            min-height: 100vh;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        }
-        
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #e8e8e8;
-        }
-        
-        h1 {
-            color: #2c3e50;
-            font-size: 36px;
-            margin-bottom: 10px;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
-        }
-        
-        .app-description {
-            color: #7f8c8d;
-            font-size: 18px;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        
-        .main-content {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 25px;
-            margin-bottom: 30px;
-        }
-        
-        .upload-section {
-            flex: 1;
-            min-width: 300px;
-            padding: 25px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            border: 2px dashed #6a11cb;
-            text-align: center;
-            transition: all 0.3s;
-        }
-        
-        .upload-section:hover {
-            border-color: #2575fc;
-            background: #e8f4ff;
-            transform: translateY(-5px);
-        }
-        
-        .upload-section h2 {
-            margin-bottom: 15px;
-            color: #2c3e50;
-        }
-        
-        .upload-icon {
-            font-size: 60px;
-            color: #6a11cb;
-            margin-bottom: 15px;
-            transition: all 0.3s;
-        }
-        
-        .upload-section:hover .upload-icon {
-            transform: scale(1.1);
-        }
-        
-        #image-upload {
-            display: none;
-        }
-        
-        .upload-label {
-            display: inline-block;
-            padding: 12px 25px;
-            background: linear-gradient(to right, #6a11cb, #2575fc);
-            color: white;
-            border-radius: 30px;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin: 15px 0;
-            box-shadow: 0 4px 15px rgba(106, 17, 203, 0.3);
-        }
-        
-        .upload-label:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(106, 17, 203, 0.4);
-        }
-        
-        .preview-container {
-            flex: 1;
-            min-width: 300px;
-            text-align: center;
-            position: relative;
-        }
-        
-        .preview-container h2 {
-            margin-bottom: 15px;
-            color: #2c3e50;
-        }
-        
-        #image-editor {
-            position: relative;
-            display: inline-block;
-            border: 2px solid #ddd;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            max-width: 100%;
-        }
-        
-        #image-preview {
-            max-width: 100%;
-            max-height: 400px;
-            display: block;
-        }
-        
-        .number-overlay {
-            position: absolute;
-            cursor: move;
-            user-select: none;
-            font-family: 'Amiri', serif;
-            font-weight: bold;
-            transition: all 0.3s;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-        }
-        
-        .number-overlay:hover {
-            transform: scale(1.1);
-            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.7);
-            z-index: 10;
-        }
-        
-        .drag-handle {
-            cursor: move;
-            display: inline-block;
-            margin-right: 5px;
-            font-size: 16px;
-        }
-        
-        .controls {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin: 30px 0;
-        }
-        
-        .control-group {
-            padding: 20px;
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            border-radius: 10px;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
-            transition: transform 0.3s;
-        }
-        
-        .control-group:hover {
-            transform: translateY(-5px);
-        }
-        
-        .control-group h3 {
-            margin-bottom: 15px;
-            color: #2c3e50;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #6a11cb;
-        }
-        
-        .form-group {
-            margin-bottom: 15px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: #34495e;
-        }
-        
-        input, select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 16px;
-            transition: border 0.3s, box-shadow 0.3s;
-        }
-        
-        input:focus, select:focus {
-            border-color: #6a11cb;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.2);
-        }
-        
-        .color-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .color-group input {
-            flex: 1;
-        }
-        
-        .color-preview {
-            width: 40px;
-            height: 40px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-        }
-        
-        .buttons {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin: 30px 0;
-            flex-wrap: wrap;
-        }
-        
-        button {
-            padding: 14px 30px;
-            border: none;
-            border-radius: 30px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-        }
-        
-        .btn-primary {
-            background: linear-gradient(to right, #6a11cb, #2575fc);
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(106, 17, 203, 0.4);
-        }
-        
-        .btn-success {
-            background: linear-gradient(to right, #25ac64, #2ecc71);
-            color: white;
-        }
-        
-        .btn-success:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4);
-        }
-        
-        .btn-danger {
-            background: linear-gradient(to right, #e74c3c, #c0392b);
-            color: white;
-        }
-        
-        .btn-danger:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
-        }
-        
-        .btn-secondary {
-            background: linear-gradient(to right, #7f8c8d, #95a5a6);
-            color: white;
-        }
-        
-        .btn-secondary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(127, 140, 141, 0.4);
-        }
-        
-        .print-preview {
-            margin-top: 40px;
-            padding: 25px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-        
-        .print-preview h2 {
-            text-align: center;
-            margin-bottom: 20px;
-            color: #2c3e50;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #6a11cb;
-        }
-        
-        .a4-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        
-        .a4-page {
-            width: 210mm;
-            min-height: 297mm;
-            padding: 15mm;
-            background: white;
-            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.2);
-            border: 1px solid #ddd;
-            transform-origin: center top;
-        }
-        
-        .page-header {
-            text-align: center;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .grid-container {
-            display: grid;
-            width: 100%;
-            height: 100%;
-        }
-        
-        .grid-item {
-            position: relative;
-            border: 1px solid #eee;
-            border-radius: 5px;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .grid-item img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-        }
-        
-        .grid-number {
-            position: absolute;
-            font-family: 'Amiri', serif;
-            font-weight: bold;
-        }
-        
-        .hidden {
-            display: none;
-        }
-        
-        footer {
-            text-align: center;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
-            color: #7f8c8d;
-        }
-        
-        .slider-container {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .slider-container input[type="range"] {
-            flex: 1;
-        }
-        
-        .slider-value {
-            min-width: 40px;
-            text-align: center;
-            font-weight: bold;
-        }
-        
-        .position-controls {
-            background: #e9ecef;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 10px;
-        }
-        
-        .preview-controls {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin: 20px 0;
-        }
-        
-        .zoom-controls {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin: 10px 0;
-        }
-        
-        .zoom-controls button {
-            padding: 8px 15px;
-        }
-        
-        @media print {
-            body * {
-                visibility: hidden;
-            }
-            
-            .print-preview, .print-preview * {
-                visibility: visible;
-            }
-            
-            .a4-page {
-                box-shadow: none;
-                border: none;
-                margin: 0;
-                padding: 0;
-                page-break-after: always;
-                width: 100%;
-                height: 100%;
-            }
-            
-            .no-print {
-                display: none;
-            }
-            
-            .a4-container {
-                display: block;
-            }
-        }
-        
-        @media (max-width: 768px) {
-            .main-content {
-                flex-direction: column;
-            }
-            
-            .controls {
-                grid-template-columns: 1fr;
-            }
-            
-            .buttons {
-                flex-direction: column;
-            }
-            
-            .a4-page {
-                transform: scale(0.7);
-            }
-        }
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>طباعة ملصقات بعدّاد أرقام – A4</title>
+<style>
+  :root{
+    --cols: 3;           /* عدد الأعمدة في الصفحة */
+    --rows: 8;           /* عدد الصفوف في الصفحة (3×8 = 24 مثل الصورة) */
+    --gap-mm: 6;         /* المسافة بين الملصقات بالميليميتر */
+    --num-x: 50;         /* موضع الرقم أفقياً ٪ */
+    --num-y: 20;         /* موضع الرقم عمودياً ٪ */
+    --num-size: 26;      /* حجم خط الرقم px */
+    --num-color: #000;   /* لون الرقم */
+    --shadow-color: #000;/* لون الظل */
+    --shadow-blur: 3;    /* شدة الظل px */
+  }
+
+  *{box-sizing:border-box}
+  body{font-family:system-ui, "Amiri", Tahoma, Arial; background:#f2f4f8; margin:0; padding:16px; color:#222}
+  .app{max-width:1200px; margin:auto; background:#fff; border-radius:14px; box-shadow:0 8px 28px rgba(0,0,0,.09); padding:18px}
+  h1{margin:0 0 12px; font-size:clamp(20px,3vw,28px)}
+  .grid{display:grid; grid-template-columns: 320px 1fr; gap:16px}
+  @media (max-width: 900px){ .grid{grid-template-columns:1fr} }
+
+  .card{border:1px solid #e6e9ef; border-radius:12px; padding:14px}
+  .card h2{font-size:18px; margin:0 0 10px}
+  label{font-size:14px; color:#444}
+  input[type="number"], input[type="range"], input[type="color"], input[type="text"]{width:100%; padding:10px; margin:6px 0 12px; border:1px solid #dde2ea; border-radius:8px}
+  .row{display:grid; grid-template-columns: 1fr 1fr; gap:10px}
+  .actions{display:flex; flex-wrap:wrap; gap:10px; margin-top:8px}
+  button{border:0; border-radius:999px; padding:12px 16px; cursor:pointer; font-weight:600}
+  .btn-primary{background:linear-gradient(90deg,#6a11cb,#2575fc); color:#fff}
+  .btn-ghost{background:#f2f4f8}
+  .btn-success{background:linear-gradient(90deg,#1aa34a,#31c26d); color:#fff}
+  .btn-danger{background:linear-gradient(90deg,#e74c3c,#c0392b); color:#fff}
+
+  /* معاينة موضع الرقم فوق صورة القالب */
+  .template{position:relative; border:1px dashed #c7cfdb; border-radius:10px; overflow:hidden; background:#fafbff}
+  .template img{display:block; width:100%; height:auto}
+  .tpl-number{position:absolute; left:var(--num-x,% 50); top:var(--num-y,% 20); transform:translate(-50%,-50%); font-weight:700; font-size:calc(var(--num-size, 26) * 1px); color:var(--num-color, #000); text-shadow: var(--shadow-blur, 3)px var(--shadow-blur, 3)px var(--shadow-blur, 3)px var(--shadow-color, #000); cursor:grab; user-select:none; z-index:3}
+  .tpl-number:active{cursor:grabbing}
+
+  /* مساحة الطباعة */
+  .print-area{border:1px solid #e6e9ef; border-radius:12px; overflow:auto; background:#fff; padding:10px}
+  .sheet{width:210mm; height:297mm; margin:auto; background:#fff; position:relative; page-break-after:always; border:1px solid #f0f2f6}
+  .labels{display:grid; width:100%; height:100%;
+          grid-template-columns: repeat(var(--cols), 1fr);
+          grid-template-rows: repeat(var(--rows), 1fr);
+          gap: calc(var(--gap-mm) * 1mm); padding: calc(var(--gap-mm) * 1mm)}
+  .label{position:relative; border:1px solid #eaeef5; border-radius:6px; overflow:hidden; display:flex; align-items:center; justify-content:center}
+  .label img{width:100%; height:100%; object-fit:contain}
+  .label .num{position:absolute; left:calc(var(--num-x) * 1%); top:calc(var(--num-y) * 1%);
+              transform:translate(-50%,-50%); font-weight:700; font-size:calc(var(--num-size) * 1px);
+              color:var(--num-color); text-shadow: var(--shadow-blur)px var(--shadow-blur)px var(--shadow-blur)px var(--shadow-color)}
+
+  .hint{font-size:13px; color:#6b7280; margin-top:6px}
+
+  /* طباعة فعلية */
+  @page{ size: A4; margin: 6mm }
+  @media print{
+    body{background:#fff}
+    .no-print, .actions{display:none !important}
+    .app{box-shadow:none; padding:0}
+    .print-area{border:0; padding:0}
+    .sheet{border:0; margin:0; page-break-after:always}
+  }
+</style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>تطبيق تعديل الصور مع تحسينات</h1>
-            <p class="app-description">قم بتحميل صورة، أضف أرقامًا متسلسلة وقم بتحريكها بحرية، ثم أنشئ صفحات للطباعة</p>
-        </header>
-        
-        <div class="main-content">
-            <div class="upload-section">
-                <div class="upload-icon">📁</div>
-                <h2>تحميل الصورة</h2>
-                <p>اختر صورة من الاستديو لاستخدامها في التصميم</p>
-                <input type="file" id="image-upload" accept="image/*">
-                <label for="image-upload" class="upload-label">اختر صورة</label>
-                <p id="file-name">لم يتم اختيار صورة بعد</p>
-            </div>
-            
-            <div class="preview-container">
-                <h2>معاينة الصورة والأرقام</h2>
-                <div id="image-editor">
-                    <img id="image-preview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23f8f9fa'/%3E%3Cpath d='M150 150 L250 150 L200 250 Z' fill='%236a11cb' opacity='0.2'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='18' fill='%23ccc'%3Eمعاينة الصورة%3C/text%3E%3C/svg%3E" alt="معاينة الصورة">
-                    <!-- الأرقام ستضاف هنا ديناميكيًا -->
-                </div>
-            </div>
-        </div>
-        
-        <div class="controls">
-            <div class="control-group">
-                <h3>إعدادات الأرقام</h3>
-                <div class="form-group">
-                    <label for="number-count">عدد الصور المطلوبة</label>
-                    <input type="number" id="number-count" min="1" value="6">
-                </div>
-                <div class="form-group">
-                    <label for="number-start">رقم البداية</label>
-                    <input type="number" id="number-start" min="1" value="1">
-                </div>
-                <div class="form-group">
-                    <label for="font-size">حجم الخط</label>
-                    <div class="slider-container">
-                        <input type="range" id="font-size" min="10" max="80" value="24">
-                        <span class="slider-value" id="font-size-value">24px</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="control-group">
-                <h3>تنسيق الأرقام</h3>
-                <div class="form-group">
-                    <label for="number-color">لون الرقم</label>
-                    <div class="color-group">
-                        <input type="color" id="number-color" value="#6a11cb">
-                        <div class="color-preview" id="color-preview" style="background-color: #6a11cb;"></div>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="shadow-color">لون ظل الرقم</label>
-                    <div class="color-group">
-                        <input type="color" id="shadow-color" value="#000000">
-                        <div class="color-preview" id="shadow-color-preview" style="background-color: #000000;"></div>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="shadow-blur">وضوح الظل</label>
-                    <div class="slider-container">
-                        <input type="range" id="shadow-blur" min="0" max="10" value="4">
-                        <span class="slider-value" id="shadow-blur-value">4px</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="control-group">
-                <h3>إعدادات الموضع والتباعد</h3>
-                <div class="form-group">
-                    <label for="position-x">الإزاحة الأفقية (X)</label>
-                    <div class="slider-container">
-                        <input type="range" id="position-x" min="0" max="100" value="50">
-                        <span class="slider-value" id="position-x-value">50%</span>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="position-y">الإزاحة الرأسية (Y)</label>
-                    <div class="slider-container">
-                        <input type="range" id="position-y" min="0" max="100" value="20">
-                        <span class="slider-value" id="position-y-value">20%</span>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="columns-count">عدد الأعمدة في الصفحة</label>
-                    <input type="number" id="columns-count" min="1" max="6" value="3">
-                </div>
-                <div class="form-group">
-                    <label for="spacing">المسافة بين الصور (مم)</label>
-                    <div class="slider-container">
-                        <input type="range" id="spacing" min="0" max="30" value="10">
-                        <span class="slider-value" id="spacing-value">10mm</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="buttons">
-            <button id="add-single-number-btn" class="btn-primary">
-                <span>🔢</span> <span>إضافة رقم واحد للضبط</span>
-            </button>
-            <button id="add-numbers-btn" class="btn-primary">
-                <span>➕</span> <span>إضافة جميع الأرقام</span>
-            </button>
-            <button id="generate-btn" class="btn-success">
-                <span>🖨️</span> <span>معاينة الطباعة</span>
-            </button>
-            <button id="print-btn" class="btn-success">
-                <span>📄</span> <span>طباعة</span>
-            </button>
-            <button id="reset-btn" class="btn-danger">
-                <span>🔄</span> <span>إعادة تعيين</span>
-            </button>
-        </div>
-        
-        <div id="print-preview" class="print-preview hidden">
-            <h2>معاينة الطباعة</h2>
-            
-            <div class="preview-controls no-print">
-                <div class="zoom-controls">
-                    <button id="zoom-in-btn" class="btn-secondary">➕ تكبير</button>
-                    <button id="zoom-out-btn" class="btn-secondary">➖ تصغير</button>
-                    <button id="zoom-reset-btn" class="btn-secondary">🔄 إعادة ضبط</button>
-                </div>
-            </div>
-            
-            <div class="a4-container">
-                <div id="pages-container" class="a4-page"></div>
-            </div>
-            
-            <div class="buttons no-print">
-                <button id="close-preview-btn" class="btn-danger">
-                    <span>✖️</span> <span>إغلاق المعاينة</span>
-                </button>
-            </div>
-        </div>
-        
-        <footer>
-            <p>تطبيق تعديل الصور مع تحسينات - تم التطوير باستخدام HTML5 و CSS3 و JavaScript</p>
-        </footer>
-    </div>
+  <div class="app">
+    <h1>طباعة ملصقات بعدّاد أرقام (A4 3×8 مثل الصورة)</h1>
+    <div class="grid">
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // العناصر الرئيسية
-            const imageUpload = document.getElementById('image-upload');
-            const imagePreview = document.getElementById('image-preview');
-            const imageEditor = document.getElementById('image-editor');
-            const fileName = document.getElementById('file-name');
-            const numberCount = document.getElementById('number-count');
-            const numberStart = document.getElementById('number-start');
-            const fontSize = document.getElementById('font-size');
-            const fontSizeValue = document.getElementById('font-size-value');
-            const numberColor = document.getElementById('number-color');
-            const shadowColor = document.getElementById('shadow-color');
-            const shadowBlur = document.getElementById('shadow-blur');
-            const shadowBlurValue = document.getElementById('shadow-blur-value');
-            const colorPreview = document.getElementById('color-preview');
-            const shadowColorPreview = document.getElementById('shadow-color-preview');
-            const positionX = document.getElementById('position-x');
-            const positionXValue = document.getElementById('position-x-value');
-            const positionY = document.getElementById('position-y');
-            const positionYValue = document.getElementById('position-y-value');
-            const columnsCount = document.getElementById('columns-count');
-            const spacing = document.getElementById('spacing');
-            const spacingValue = document.getElementById('spacing-value');
-            const addSingleNumberBtn = document.getElementById('add-single-number-btn');
-            const addNumbersBtn = document.getElementById('add-numbers-btn');
-            const generateBtn = document.getElementById('generate-btn');
-            const printBtn = document.getElementById('print-btn');
-            const resetBtn = document.getElementById('reset-btn');
-            const printPreview = document.getElementById('print-preview');
-            const pagesContainer = document.getElementById('pages-container');
-            const closePreviewBtn = document.getElementById('close-preview-btn');
-            const zoomInBtn = document.getElementById('zoom-in-btn');
-            const zoomOutBtn = document.getElementById('zoom-out-btn');
-            const zoomResetBtn = document.getElementById('zoom-reset-btn');
-            
-            // متغيرات التطبيق
-            let uploadedImage = null;
-            let currentNumbers = [];
-            let isDragging = false;
-            let dragTarget = null;
-            let startX, startY, initialX, initialY;
-            let currentZoom = 1;
-            
-            // تحديث قيم السلايدر
-            fontSize.addEventListener('input', function() {
-                fontSizeValue.textContent = `${this.value}px`;
-                updateNumbersStyle();
-            });
-            
-            shadowBlur.addEventListener('input', function() {
-                shadowBlurValue.textContent = `${this.value}px`;
-                updateNumbersStyle();
-            });
-            
-            positionX.addEventListener('input', function() {
-                positionXValue.textContent = `${this.value}%`;
-                if (currentNumbers.length > 0) {
-                    updateNumberPosition();
-                }
-            });
-            
-            positionY.addEventListener('input', function() {
-                positionYValue.textContent = `${this.value}%`;
-                if (currentNumbers.length > 0) {
-                    updateNumberPosition();
-                }
-            });
-            
-            spacing.addEventListener('input', function() {
-                spacingValue.textContent = `${this.value}mm`;
-            });
-            
-            // تحديث ألوان المعاينة
-            numberColor.addEventListener('input', function() {
-                colorPreview.style.backgroundColor = this.value;
-                updateNumbersStyle();
-            });
-            
-            shadowColor.addEventListener('input', function() {
-                shadowColorPreview.style.backgroundColor = this.value;
-                updateNumbersStyle();
-            });
-            
-            // تحميل الصورة
-            imageUpload.addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    fileName.textContent = file.name;
-                    const reader = new FileReader();
-                    reader.onload = function(event) {
-                        imagePreview.src = event.target.result;
-                        uploadedImage = event.target.result;
-                        
-                        // إزالة الأرقام الحالية عند تحميل صورة جديدة
-                        currentNumbers.forEach(num => num.element.remove());
-                        currentNumbers = [];
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-            
-            // إضافة رقم واحد للضبط
-            addSingleNumberBtn.addEventListener('click', function() {
-                if (!uploadedImage) {
-                    alert('يرجى تحميل صورة أولاً');
-                    return;
-                }
-                
-                // إزالة الأرقام الحالية
-                currentNumbers.forEach(num => num.element.remove());
-                currentNumbers = [];
-                
-                addNumber(1);
-            });
-            
-            // إضافة جميع الأرقام إلى الصورة
-            addNumbersBtn.addEventListener('click', function() {
-                if (!uploadedImage) {
-                    alert('يرجى تحميل صورة أولاً');
-                    return;
-                }
-                
-                // إزالة الأرقام الحالية
-                currentNumbers.forEach(num => num.element.remove());
-                currentNumbers = [];
-                
-                const count = parseInt(numberCount.value);
-                const start = parseInt(numberStart.value);
-                
-                for (let i = 0; i < count; i++) {
-                    addNumber(start + i);
-                }
-            });
-            
-            // دالة مساعدة لإضافة رقم
-            function addNumber(number) {
-                const size = parseInt(fontSize.value);
-                const color = numberColor.value;
-                const sColor = shadowColor.value;
-                const sBlur = parseInt(shadowBlur.value);
-                const posX = parseInt(positionX.value);
-                const posY = parseInt(positionY.value);
-                
-                const numberElement = document.createElement('div');
-                numberElement.className = 'number-overlay';
-                numberElement.textContent = number;
-                numberElement.style.color = color;
-                numberElement.style.fontSize = `${size}px`;
-                numberElement.style.textShadow = `${sBlur}px ${sBlur}px ${sBlur}px ${sColor}`;
-                numberElement.style.left = `${posX}%`;
-                numberElement.style.top = `${posY}%`;
-                numberElement.dataset.number = number;
-                
-                // جعل العنصر قابلاً للسحب
-                makeDraggable(numberElement);
-                
-                imageEditor.appendChild(numberElement);
-                
-                currentNumbers.push({
-                    number: number,
-                    element: numberElement,
-                    x: posX,
-                    y: posY
-                });
-            }
-            
-            // تحديث تنسيق الأرقام
-            function updateNumbersStyle() {
-                const color = numberColor.value;
-                const sColor = shadowColor.value;
-                const sBlur = parseInt(shadowBlur.value);
-                const size = parseInt(fontSize.value);
-                
-                currentNumbers.forEach(item => {
-                    item.element.style.color = color;
-                    item.element.style.fontSize = `${size}px`;
-                    item.element.style.textShadow = `${sBlur}px ${sBlur}px ${sBlur}px ${sColor}`;
-                });
-            }
-            
-            // تحديث موضع الأرقام
-            function updateNumberPosition() {
-                const posX = parseInt(positionX.value);
-                const posY = parseInt(positionY.value);
-                
-                currentNumbers.forEach(item => {
-                    item.element.style.left = `${posX}%`;
-                    item.element.style.top = `${posY}%`;
-                    item.x = posX;
-                    item.y = posY;
-                });
-            }
-            
-            // جعل العناصر قابلة للسحب
-            function makeDraggable(element) {
-                element.addEventListener('mousedown', dragStart);
-                element.addEventListener('touchstart', dragStart, { passive: false });
-                
-                // منع انتخاب النص أثناء السحب
-                element.addEventListener('dragstart', function(e) {
-                    e.preventDefault();
-                });
-            }
-            
-            function dragStart(e) {
-                e.preventDefault();
-                isDragging = true;
-                dragTarget = e.target;
-                
-                if (e.type === 'touchstart') {
-                    startX = e.touches[0].clientX;
-                    startY = e.touches[0].clientY;
-                } else {
-                    startX = e.clientX;
-                    startY = e.clientY;
-                }
-                
-                // حفظ الموضع الأولي
-                const computedStyle = window.getComputedStyle(dragTarget);
-                initialX = parseInt(computedStyle.left);
-                initialY = parseInt(computedStyle.top);
-                
-                // تحديث السلايدرات لتعكس الموضع الحالي
-                positionX.value = initialX;
-                positionXValue.textContent = `${initialX}%`;
-                positionY.value = initialY;
-                positionYValue.textContent = `${initialY}%`;
-                
-                // إضافة مستمعات الأحداث
-                document.addEventListener('mousemove', drag);
-                document.addEventListener('touchmove', drag, { passive: false });
-                document.addEventListener('mouseup', dragEnd);
-                document.addEventListener('touchend', dragEnd);
-            }
-            
-            function drag(e) {
-                if (!isDragging) return;
-                
-                e.preventDefault();
-                let currentX, currentY;
-                
-                if (e.type === 'touchmove') {
-                    currentX = e.touches[0].clientX;
-                    currentY = e.touches[0].clientY;
-                } else {
-                    currentX = e.clientX;
-                    currentY = e.clientY;
-                }
-                
-                // حساب الإزاحة
-                const dx = currentX - startX;
-                const dy = currentY - startY;
-                
-                // تحديث الموضع
-                const newX = initialX + dx;
-                const newY = initialY + dy;
-                
-                dragTarget.style.left = `${newX}px`;
-                dragTarget.style.top = `${newY}px`;
-                
-                // تحديث البيانات في المصفوفة
-                const number = parseInt(dragTarget.dataset.number);
-                const index = currentNumbers.findIndex(item => item.number === number);
-                if (index !== -1) {
-                    // تحويل الموضع إلى نسبة مئوية
-                    const rect = imageEditor.getBoundingClientRect();
-                    const percentX = (newX / rect.width) * 100;
-                    const percentY = (newY / rect.height) * 100;
-                    
-                    currentNumbers[index].x = percentX;
-                    currentNumbers[index].y = percentY;
-                    
-                    // تحديث السلايدرات
-                    positionX.value = Math.round(percentX);
-                    positionXValue.textContent = `${Math.round(percentX)}%`;
-                    positionY.value = Math.round(percentY);
-                    positionYValue.textContent = `${Math.round(percentY)}%`;
-                }
-            }
-            
-            function dragEnd() {
-                isDragging = false;
-                dragTarget = null;
-                
-                // إزالة مستمعات الأحداث
-                document.removeEventListener('mousemove', drag);
-                document.removeEventListener('touchmove', drag);
-                document.removeEventListener('mouseup', dragEnd);
-                document.removeEventListener('touchend', dragEnd);
-            }
-            
-            // معاينة الطباعة
-            generateBtn.addEventListener('click', function() {
-                if (!uploadedImage) {
-                    alert('يرجى تحميل صورة أولاً');
-                    return;
-                }
-                
-                if (currentNumbers.length === 0) {
-                    alert('يرجى إضافة الأرقام أولاً');
-                    return;
-                }
-                
-                generatePrintPreview();
-                printPreview.classList.remove('hidden');
-                currentZoom = 1;
-                updateZoom();
-            });
-            
-            // طباعة المستند
-            printBtn.addEventListener('click', function() {
-                if (!uploadedImage) {
-                    alert('يرجى تحميل صورة أولاً');
-                    return;
-                }
-                
-                if (currentNumbers.length === 0) {
-                    alert('يرجى إضافة الأرقام أولاً');
-                    return;
-                }
-                
-                generatePrintPreview();
-                setTimeout(() => {
-                    window.print();
-                }, 500);
-            });
-            
-            // إعادة تعيين التطبيق
-            resetBtn.addEventListener('click', function() {
-                imageUpload.value = '';
-                imagePreview.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23f8f9fa'/%3E%3Cpath d='M150 150 L250 150 L200 250 Z' fill='%236a11cb' opacity='0.2'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='18' fill='%23ccc'%3Eمعاينة الصورة%3C/text%3E%3C/svg%3E";
-                fileName.textContent = 'لم يتم اختيار صورة بعد';
-                numberCount.value = 6;
-                numberStart.value = 1;
-                fontSize.value = 24;
-                fontSizeValue.textContent = '24px';
-                numberColor.value = '#6a11cb';
-                colorPreview.style.backgroundColor = '#6a11cb';
-                shadowColor.value = '#000000';
-                shadowColorPreview.style.backgroundColor = '#000000';
-                shadowBlur.value = 4;
-                shadowBlurValue.textContent = '4px';
-                positionX.value = 50;
-                positionXValue.textContent = '50%';
-                positionY.value = 20;
-                positionYValue.textContent = '20%';
-                columnsCount.value = 3;
-                spacing.value = 10;
-                spacingValue.textContent = '10mm';
-                uploadedImage = null;
-                
-                // إزالة الأرقام الحالية
-                currentNumbers.forEach(num => num.element.remove());
-                currentNumbers = [];
-                
-                printPreview.classList.add('hidden');
-            });
-            
-            // إغلاق معاينة الطباعة
-            closePreviewBtn.addEventListener('click', function() {
-                printPreview.classList.add('hidden');
-            });
-            
-            // التحكم في التكبير/التصغير
-            zoomInBtn.addEventListener('click', function() {
-                if (currentZoom < 1.5) {
-                    currentZoom += 0.1;
-                    updateZoom();
-                }
-            });
-            
-            zoomOutBtn.addEventListener('click', function() {
-                if (currentZoom > 0.6) {
-                    currentZoom -= 0.1;
-                    updateZoom();
-                }
-            });
-            
-            zoomResetBtn.addEventListener('click', function() {
-                currentZoom = 1;
-                updateZoom();
-            });
-            
-            function updateZoom() {
-                pagesContainer.style.transform = `scale(${currentZoom})`;
-            }
-            
-            // إنشاء معاينة الطباعة
-            function generatePrintPreview() {
-                pagesContainer.innerHTML = '';
-                
-                const count = parseInt(numberCount.value);
-                const start = parseInt(numberStart.value);
-                const columns = parseInt(columnsCount.value);
-                const spacingValue = parseInt(spacing.value);
-                const rows = Math.ceil(count / columns);
-                
-                const grid = document.createElement('div');
-                grid.className = 'grid-container';
-                grid.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
-                grid.style.gap = `${spacingValue}mm`;
-                grid.style.minHeight = '240mm';
-                
-                for (let i = 0; i < count; i++) {
-                    const itemDiv = document.createElement('div');
-                    itemDiv.className = 'grid-item';
-                    
-                    const img = document.createElement('img');
-                    img.src = uploadedImage;
-                    img.style.maxHeight = '100%';
-                    
-                    const numberDiv = document.createElement('div');
-                    numberDiv.className = 'grid-number';
-                    numberDiv.textContent = start + i;
-                    numberDiv.style.color = numberColor.value;
-                    numberDiv.style.fontSize = `${fontSize.value}px`;
-                    numberDiv.style.textShadow = `${shadowBlur.value}px ${shadowBlur.value}px ${shadowBlur.value}px ${shadowColor.value}`;
-                    
-                    // تطبيق الموضع النسبي بناءً على الموضع المحفوظ
-                    if (currentNumbers[i]) {
-                        numberDiv.style.left = `${currentNumbers[i].x}%`;
-                        numberDiv.style.top = `${currentNumbers[i].y}%`;
-                    } else {
-                        // موضع افتراضي إذا لم يكن الرقم موجودًا
-                        numberDiv.style.left = `${positionX.value}%`;
-                        numberDiv.style.top = `${positionY.value}%`;
-                    }
-                    
-                    itemDiv.appendChild(img);
-                    itemDiv.appendChild(numberDiv);
-                    grid.appendChild(itemDiv);
-                }
-                
-                pagesContainer.appendChild(grid);
-            }
-        });
-    </script>
+      <!-- الإعدادات -->
+      <section class="card">
+        <h2>١) الصورة والموضع</h2>
+        <label>اختر الصورة</label>
+        <input type="file" id="file" accept="image/*" />
+        <div class="template" id="template" style="aspect-ratio: 4/1">
+          <img id="tplImg" alt="معاينة" />
+          <div id="tplNumber" class="tpl-number">1</div>
+        </div>
+        <div class="row">
+          <div>
+            <label>إزاحة أفقية (٪)</label>
+            <input type="range" id="x" min="0" max="100" value="50" />
+          </div>
+          <div>
+            <label>إزاحة رأسية (٪)</label>
+            <input type="range" id="y" min="0" max="100" value="20" />
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label>حجم الرقم (px)</label>
+            <input type="range" id="size" min="12" max="80" value="26" />
+          </div>
+          <div>
+            <label>لون الرقم</label>
+            <input type="color" id="color" value="#000000" />
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label>لون الظل</label>
+            <input type="color" id="shadowColor" value="#000000" />
+          </div>
+          <div>
+            <label>قيمة الظل (px)</label>
+            <input type="range" id="shadowBlur" min="0" max="10" value="3" />
+          </div>
+        </div>
+        <div class="hint">اسحب الرقم مباشرة فوق الصورة لتحديد مكانه، أو استخدم أشرطة التمرير.</div>
+        <hr style="margin:14px 0" />
+        <h2>٢) الكمية والتخطيط</h2>
+        <div class="row">
+          <div>
+            <label>عدد الملصقات</label>
+            <input type="number" id="count" min="1" value="24" />
+          </div>
+          <div>
+            <label>رقم البداية</label>
+            <input type="number" id="start" min="0" value="1" />
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label>عدد الأعمدة في الصفحة</label>
+            <input type="number" id="cols" min="1" max="6" value="3" />
+          </div>
+          <div>
+            <label>عدد الصفوف في الصفحة</label>
+            <input type="number" id="rows" min="1" max="12" value="8" />
+          </div>
+        </div>
+        <label>المسافة بين الملصقات (مم)</label>
+        <input type="range" id="gap" min="0" max="15" value="6" />
+
+        <div class="actions">
+          <button id="make" class="btn-primary">معاينة الصفحة</button>
+          <button id="print" class="btn-success">طباعة</button>
+          <button id="reset" class="btn-danger">إعادة ضبط</button>
+        </div>
+      </section>
+
+      <!-- المعاينة القابلة للطباعة -->
+      <section class="card print-area">
+        <h2>معاينة الطباعة</h2>
+        <div id="sheets"></div>
+        <div class="hint no-print">إذا زاد العدد عن سعة الصفحة (الأعمدة × الصفوف)، سينشأ البرنامج صفحات إضافية تلقائياً.</div>
+      </section>
+    </div>
+  </div>
+
+<script>
+  const st = document.documentElement.style;
+  const file = document.getElementById('file');
+  const tplImg = document.getElementById('tplImg');
+  const template = document.getElementById('template');
+  const tplNumber = document.getElementById('tplNumber');
+  const x = document.getElementById('x');
+  const y = document.getElementById('y');
+  const size = document.getElementById('size');
+  const color = document.getElementById('color');
+  const shadowColor = document.getElementById('shadowColor');
+  const shadowBlur = document.getElementById('shadowBlur');
+  const count = document.getElementById('count');
+  const start = document.getElementById('start');
+  const cols = document.getElementById('cols');
+  const rows = document.getElementById('rows');
+  const gap = document.getElementById('gap');
+  const makeBtn = document.getElementById('make');
+  const printBtn = document.getElementById('print');
+  const resetBtn = document.getElementById('reset');
+  const sheets = document.getElementById('sheets');
+
+  let imageData = '';
+  let dragging = false;
+  let startPos = {x:0,y:0};
+
+  // تحميل الصورة + ضبط نسبة العرض إلى الارتفاع لمعاينة القالب
+  file.addEventListener('change', e => {
+    const f = e.target.files[0];
+    if(!f) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      imageData = ev.target.result;
+      tplImg.src = imageData;
+      // استنتاج نسبة الأبعاد
+      const tmp = new Image();
+      tmp.onload = () => {
+        const ar = (tmp.width / tmp.height) || 4/1; // افتراضي لو لم يتوفر
+        template.style.aspectRatio = ar;
+      };
+      tmp.src = imageData;
+    };
+    reader.readAsDataURL(f);
+  });
+
+  // ربط عناصر التحكم بالمتغيرات الجذرية
+  function syncCSSVars(){
+    st.setProperty('--num-x', x.value);
+    st.setProperty('--num-y', y.value);
+    st.setProperty('--num-size', size.value);
+    st.setProperty('--num-color', color.value);
+    st.setProperty('--shadow-color', shadowColor.value);
+    st.setProperty('--shadow-blur', shadowBlur.value);
+    st.setProperty('--cols', Math.max(1, +cols.value));
+    st.setProperty('--rows', Math.max(1, +rows.value));
+    st.setProperty('--gap-mm', Math.max(0, +gap.value));
+    // تحديث معاينة الرقم
+    tplNumber.textContent = start.value || 1;
+  }
+  [x,y,size,color,shadowColor,shadowBlur,cols,rows,gap,start].forEach(el=>{
+    el.addEventListener('input', syncCSSVars);
+  });
+  syncCSSVars();
+
+  // سحب الرقم داخل القالب (بالنسب المئوية دائماً)
+  const pct = (val, total) => Math.max(0, Math.min(100, (val/total)*100));
+  template.addEventListener('pointerdown', e => {
+    if(!imageData) return; // لا سحب بلا صورة
+    dragging = true;
+    template.setPointerCapture(e.pointerId);
+    startPos = {x: e.clientX, y: e.clientY};
+    moveAt(e);
+  });
+  template.addEventListener('pointermove', e => { if(dragging) moveAt(e); });
+  template.addEventListener('pointerup', e => { dragging = false; template.releasePointerCapture(e.pointerId); });
+
+  function moveAt(e){
+    const rect = template.getBoundingClientRect();
+    const px = pct(e.clientX - rect.left, rect.width);
+    const py = pct(e.clientY - rect.top, rect.height);
+    x.value = Math.round(px);
+    y.value = Math.round(py);
+    syncCSSVars();
+  }
+
+  // إنشاء صفحات المعاينة/الطباعة
+  function buildSheets(){
+    if(!imageData){
+      alert('الرجاء رفع صورة أولاً');
+      return;
+    }
+    sheets.innerHTML = '';
+    const total = Math.max(1, +count.value);
+    const begin = +start.value || 1;
+    const perPage = (+cols.value) * (+rows.value);
+    const pages = Math.ceil(total / perPage);
+
+    for(let p=0; p<pages; p++){
+      const sheet = document.createElement('div');
+      sheet.className = 'sheet';
+      sheet.style.setProperty('--cols', +cols.value);
+      sheet.style.setProperty('--rows', +rows.value);
+      sheet.style.setProperty('--gap-mm', +gap.value);
+      sheet.style.setProperty('--num-x', +x.value);
+      sheet.style.setProperty('--num-y', +y.value);
+      sheet.style.setProperty('--num-size', +size.value);
+      sheet.style.setProperty('--num-color', color.value);
+      sheet.style.setProperty('--shadow-color', shadowColor.value);
+      sheet.style.setProperty('--shadow-blur', +shadowBlur.value);
+
+      const grid = document.createElement('div');
+      grid.className = 'labels';
+
+      for(let i=0; i<perPage; i++){
+        const index = p*perPage + i;
+        if(index >= total) break;
+        const n = begin + index;
+        const item = document.createElement('div');
+        item.className = 'label';
+        const img = document.createElement('img');
+        img.src = imageData;
+        const num = document.createElement('div');
+        num.className = 'num';
+        num.textContent = n;
+        item.appendChild(img);
+        item.appendChild(num);
+        grid.appendChild(item);
+      }
+      sheet.appendChild(grid);
+      sheets.appendChild(sheet);
+    }
+  }
+
+  document.getElementById('make').addEventListener('click', buildSheets);
+  document.getElementById('print').addEventListener('click', () => { buildSheets(); window.print(); });
+  document.getElementById('reset').addEventListener('click', () => { location.reload(); });
+</script>
 </body>
 </html>
