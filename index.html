@@ -308,14 +308,21 @@
             border-bottom: 2px solid #6a11cb;
         }
         
+        .a4-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
         .a4-page {
             width: 210mm;
             min-height: 297mm;
-            margin: 0 auto 20px;
             padding: 15mm;
             background: white;
-            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.2);
             border: 1px solid #ddd;
+            transform-origin: center top;
         }
         
         .page-header {
@@ -388,6 +395,24 @@
             margin-top: 10px;
         }
         
+        .preview-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .zoom-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        
+        .zoom-controls button {
+            padding: 8px 15px;
+        }
+        
         @media print {
             body * {
                 visibility: hidden;
@@ -403,10 +428,16 @@
                 margin: 0;
                 padding: 0;
                 page-break-after: always;
+                width: 100%;
+                height: 100%;
             }
             
             .no-print {
                 display: none;
+            }
+            
+            .a4-container {
+                display: block;
             }
         }
         
@@ -421,6 +452,10 @@
             
             .buttons {
                 flex-direction: column;
+            }
+            
+            .a4-page {
+                transform: scale(0.7);
             }
         }
     </style>
@@ -546,7 +581,24 @@
         
         <div id="print-preview" class="print-preview hidden">
             <h2>معاينة الطباعة</h2>
-            <div id="pages-container"></div>
+            
+            <div class="preview-controls no-print">
+                <div class="zoom-controls">
+                    <button id="zoom-in-btn" class="btn-secondary">➕ تكبير</button>
+                    <button id="zoom-out-btn" class="btn-secondary">➖ تصغير</button>
+                    <button id="zoom-reset-btn" class="btn-secondary">🔄 إعادة ضبط</button>
+                </div>
+            </div>
+            
+            <div class="a4-container">
+                <div id="pages-container" class="a4-page"></div>
+            </div>
+            
+            <div class="buttons no-print">
+                <button id="close-preview-btn" class="btn-danger">
+                    <span>✖️</span> <span>إغلاق المعاينة</span>
+                </button>
+            </div>
         </div>
         
         <footer>
@@ -585,6 +637,10 @@
             const resetBtn = document.getElementById('reset-btn');
             const printPreview = document.getElementById('print-preview');
             const pagesContainer = document.getElementById('pages-container');
+            const closePreviewBtn = document.getElementById('close-preview-btn');
+            const zoomInBtn = document.getElementById('zoom-in-btn');
+            const zoomOutBtn = document.getElementById('zoom-out-btn');
+            const zoomResetBtn = document.getElementById('zoom-reset-btn');
             
             // متغيرات التطبيق
             let uploadedImage = null;
@@ -592,25 +648,23 @@
             let isDragging = false;
             let dragTarget = null;
             let startX, startY, initialX, initialY;
+            let currentZoom = 1;
             
             // تحديث قيم السلايدر
             fontSize.addEventListener('input', function() {
                 fontSizeValue.textContent = `${this.value}px`;
                 updateNumbersStyle();
-                updatePrintPreview();
             });
             
             shadowBlur.addEventListener('input', function() {
                 shadowBlurValue.textContent = `${this.value}px`;
                 updateNumbersStyle();
-                updatePrintPreview();
             });
             
             positionX.addEventListener('input', function() {
                 positionXValue.textContent = `${this.value}%`;
                 if (currentNumbers.length > 0) {
                     updateNumberPosition();
-                    updatePrintPreview();
                 }
             });
             
@@ -618,26 +672,22 @@
                 positionYValue.textContent = `${this.value}%`;
                 if (currentNumbers.length > 0) {
                     updateNumberPosition();
-                    updatePrintPreview();
                 }
             });
             
             spacing.addEventListener('input', function() {
                 spacingValue.textContent = `${this.value}mm`;
-                updatePrintPreview();
             });
             
             // تحديث ألوان المعاينة
             numberColor.addEventListener('input', function() {
                 colorPreview.style.backgroundColor = this.value;
                 updateNumbersStyle();
-                updatePrintPreview();
             });
             
             shadowColor.addEventListener('input', function() {
                 shadowColorPreview.style.backgroundColor = this.value;
                 updateNumbersStyle();
-                updatePrintPreview();
             });
             
             // تحميل الصورة
@@ -653,11 +703,6 @@
                         // إزالة الأرقام الحالية عند تحميل صورة جديدة
                         currentNumbers.forEach(num => num.element.remove());
                         currentNumbers = [];
-                        
-                        // تحديث معاينة الطباعة إذا كانت ظاهرة
-                        if (!printPreview.classList.contains('hidden')) {
-                            updatePrintPreview();
-                        }
                     };
                     reader.readAsDataURL(file);
                 }
@@ -675,11 +720,6 @@
                 currentNumbers = [];
                 
                 addNumber(1);
-                
-                // تحديث معاينة الطباعة إذا كانت ظاهرة
-                if (!printPreview.classList.contains('hidden')) {
-                    updatePrintPreview();
-                }
             });
             
             // إضافة جميع الأرقام إلى الصورة
@@ -698,11 +738,6 @@
                 
                 for (let i = 0; i < count; i++) {
                     addNumber(start + i);
-                }
-                
-                // تحديث معاينة الطباعة إذا كانت ظاهرة
-                if (!printPreview.classList.contains('hidden')) {
-                    updatePrintPreview();
                 }
             });
             
@@ -849,9 +884,6 @@
                     positionXValue.textContent = `${Math.round(percentX)}%`;
                     positionY.value = Math.round(percentY);
                     positionYValue.textContent = `${Math.round(percentY)}%`;
-                    
-                    // تحديث معاينة الطباعة
-                    updatePrintPreview();
                 }
             }
             
@@ -880,6 +912,8 @@
                 
                 generatePrintPreview();
                 printPreview.classList.remove('hidden');
+                currentZoom = 1;
+                updateZoom();
             });
             
             // طباعة المستند
@@ -931,6 +965,35 @@
                 printPreview.classList.add('hidden');
             });
             
+            // إغلاق معاينة الطباعة
+            closePreviewBtn.addEventListener('click', function() {
+                printPreview.classList.add('hidden');
+            });
+            
+            // التحكم في التكبير/التصغير
+            zoomInBtn.addEventListener('click', function() {
+                if (currentZoom < 1.5) {
+                    currentZoom += 0.1;
+                    updateZoom();
+                }
+            });
+            
+            zoomOutBtn.addEventListener('click', function() {
+                if (currentZoom > 0.6) {
+                    currentZoom -= 0.1;
+                    updateZoom();
+                }
+            });
+            
+            zoomResetBtn.addEventListener('click', function() {
+                currentZoom = 1;
+                updateZoom();
+            });
+            
+            function updateZoom() {
+                pagesContainer.style.transform = `scale(${currentZoom})`;
+            }
+            
             // إنشاء معاينة الطباعة
             function generatePrintPreview() {
                 pagesContainer.innerHTML = '';
@@ -940,65 +1003,44 @@
                 const columns = parseInt(columnsCount.value);
                 const spacingValue = parseInt(spacing.value);
                 const rows = Math.ceil(count / columns);
-                const itemsPerPage = columns * rows;
-                const totalPages = Math.ceil(count / itemsPerPage);
                 
-                for (let page = 0; page < totalPages; page++) {
-                    const pageDiv = document.createElement('div');
-                    pageDiv.className = 'a4-page';
+                const grid = document.createElement('div');
+                grid.className = 'grid-container';
+                grid.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
+                grid.style.gap = `${spacingValue}mm`;
+                grid.style.minHeight = '240mm';
+                
+                for (let i = 0; i < count; i++) {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'grid-item';
                     
-                    const pageHeader = document.createElement('div');
-                    pageHeader.className = 'page-header';
-                    pageHeader.textContent = `صفحة ${page + 1} من ${totalPages}`;
-                    pageDiv.appendChild(pageHeader);
+                    const img = document.createElement('img');
+                    img.src = uploadedImage;
+                    img.style.maxHeight = '100%';
                     
-                    const grid = document.createElement('div');
-                    grid.className = 'grid-container';
-                    grid.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
-                    grid.style.gap = `${spacingValue}mm`;
+                    const numberDiv = document.createElement('div');
+                    numberDiv.className = 'grid-number';
+                    numberDiv.textContent = start + i;
+                    numberDiv.style.color = numberColor.value;
+                    numberDiv.style.fontSize = `${fontSize.value}px`;
+                    numberDiv.style.textShadow = `${shadowBlur.value}px ${shadowBlur.value}px ${shadowBlur.value}px ${shadowColor.value}`;
                     
-                    const startIndex = page * itemsPerPage;
-                    const endIndex = Math.min(startIndex + itemsPerPage, count);
-                    
-                    for (let i = startIndex; i < endIndex; i++) {
-                        const itemDiv = document.createElement('div');
-                        itemDiv.className = 'grid-item';
-                        
-                        const img = document.createElement('img');
-                        img.src = uploadedImage;
-                        
-                        const numberDiv = document.createElement('div');
-                        numberDiv.className = 'grid-number';
-                        numberDiv.textContent = start + i;
-                        numberDiv.style.color = numberColor.value;
-                        numberDiv.style.fontSize = `${fontSize.value}px`;
-                        numberDiv.style.textShadow = `${shadowBlur.value}px ${shadowBlur.value}px ${shadowBlur.value}px ${shadowColor.value}`;
-                        
-                        // تطبيق الموضع النسبي بناءً على الموضع المحفوظ
-                        if (currentNumbers[i]) {
-                            numberDiv.style.left = `${currentNumbers[i].x}%`;
-                            numberDiv.style.top = `${currentNumbers[i].y}%`;
-                        } else {
-                            // موضع افتراضي إذا لم يكن الرقم موجودًا
-                            numberDiv.style.left = `${positionX.value}%`;
-                            numberDiv.style.top = `${positionY.value}%`;
-                        }
-                        
-                        itemDiv.appendChild(img);
-                        itemDiv.appendChild(numberDiv);
-                        grid.appendChild(itemDiv);
+                    // تطبيق الموضع النسبي بناءً على الموضع المحفوظ
+                    if (currentNumbers[i]) {
+                        numberDiv.style.left = `${currentNumbers[i].x}%`;
+                        numberDiv.style.top = `${currentNumbers[i].y}%`;
+                    } else {
+                        // موضع افتراضي إذا لم يكن الرقم موجودًا
+                        numberDiv.style.left = `${positionX.value}%`;
+                        numberDiv.style.top = `${positionY.value}%`;
                     }
                     
-                    pageDiv.appendChild(grid);
-                    pagesContainer.appendChild(pageDiv);
+                    itemDiv.appendChild(img);
+                    itemDiv.appendChild(numberDiv);
+                    grid.appendChild(itemDiv);
                 }
-            }
-            
-            // تحديث معاينة الطباعة
-            function updatePrintPreview() {
-                if (!printPreview.classList.contains('hidden')) {
-                    generatePrintPreview();
-                }
+                
+                pagesContainer.appendChild(grid);
             }
         });
     </script>
