@@ -597,17 +597,20 @@
             fontSize.addEventListener('input', function() {
                 fontSizeValue.textContent = `${this.value}px`;
                 updateNumbersStyle();
+                updatePrintPreview();
             });
             
             shadowBlur.addEventListener('input', function() {
                 shadowBlurValue.textContent = `${this.value}px`;
                 updateNumbersStyle();
+                updatePrintPreview();
             });
             
             positionX.addEventListener('input', function() {
                 positionXValue.textContent = `${this.value}%`;
                 if (currentNumbers.length > 0) {
                     updateNumberPosition();
+                    updatePrintPreview();
                 }
             });
             
@@ -615,22 +618,26 @@
                 positionYValue.textContent = `${this.value}%`;
                 if (currentNumbers.length > 0) {
                     updateNumberPosition();
+                    updatePrintPreview();
                 }
             });
             
             spacing.addEventListener('input', function() {
                 spacingValue.textContent = `${this.value}mm`;
+                updatePrintPreview();
             });
             
             // تحديث ألوان المعاينة
             numberColor.addEventListener('input', function() {
                 colorPreview.style.backgroundColor = this.value;
                 updateNumbersStyle();
+                updatePrintPreview();
             });
             
             shadowColor.addEventListener('input', function() {
                 shadowColorPreview.style.backgroundColor = this.value;
                 updateNumbersStyle();
+                updatePrintPreview();
             });
             
             // تحميل الصورة
@@ -646,6 +653,11 @@
                         // إزالة الأرقام الحالية عند تحميل صورة جديدة
                         currentNumbers.forEach(num => num.element.remove());
                         currentNumbers = [];
+                        
+                        // تحديث معاينة الطباعة إذا كانت ظاهرة
+                        if (!printPreview.classList.contains('hidden')) {
+                            updatePrintPreview();
+                        }
                     };
                     reader.readAsDataURL(file);
                 }
@@ -663,6 +675,11 @@
                 currentNumbers = [];
                 
                 addNumber(1);
+                
+                // تحديث معاينة الطباعة إذا كانت ظاهرة
+                if (!printPreview.classList.contains('hidden')) {
+                    updatePrintPreview();
+                }
             });
             
             // إضافة جميع الأرقام إلى الصورة
@@ -681,6 +698,11 @@
                 
                 for (let i = 0; i < count; i++) {
                     addNumber(start + i);
+                }
+                
+                // تحديث معاينة الطباعة إذا كانت ظاهرة
+                if (!printPreview.classList.contains('hidden')) {
+                    updatePrintPreview();
                 }
             });
             
@@ -748,7 +770,7 @@
                 element.addEventListener('mousedown', dragStart);
                 element.addEventListener('touchstart', dragStart, { passive: false });
                 
-                // منع 선택 النص أثناء السحب
+                // منع انتخاب النص أثناء السحب
                 element.addEventListener('dragstart', function(e) {
                     e.preventDefault();
                 });
@@ -827,6 +849,9 @@
                     positionXValue.textContent = `${Math.round(percentX)}%`;
                     positionY.value = Math.round(percentY);
                     positionYValue.textContent = `${Math.round(percentY)}%`;
+                    
+                    // تحديث معاينة الطباعة
+                    updatePrintPreview();
                 }
             }
             
@@ -854,6 +879,7 @@
                 }
                 
                 generatePrintPreview();
+                printPreview.classList.remove('hidden');
             });
             
             // طباعة المستند
@@ -966,8 +992,13 @@
                     pageDiv.appendChild(grid);
                     pagesContainer.appendChild(pageDiv);
                 }
-                
-                printPreview.classList.remove('hidden');
+            }
+            
+            // تحديث معاينة الطباعة
+            function updatePrintPreview() {
+                if (!printPreview.classList.contains('hidden')) {
+                    generatePrintPreview();
+                }
             }
         });
     </script>
