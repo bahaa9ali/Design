@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تطبيق إنشاء شبكة الصور مع الأرقام العربية</title>
+    <title>تطبيق توليد شبكة الصور</title>
     <link href="https://fonts.googleapis.com/css2?family=Lateef&display=swap" rel="stylesheet">
     <style>
         * {
@@ -213,29 +213,27 @@
             border-bottom: 2px solid #3498db;
         }
         
-        .a4-preview-container {
-            position: relative;
-            width: 595px;
-            height: 842px;
-            margin: 0 auto;
+        .preview-container {
+            width: 100%;
             background: white;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-            padding: 40px;
-            overflow: hidden;
-            border: 1px solid #ccc;
+            padding: 20px;
+            overflow: auto;
+            border-radius: 10px;
+            max-height: 700px;
+            margin-bottom: 20px;
         }
         
-        .a4-content {
-            width: 100%;
-            height: 100%;
+        .image-grid {
             display: grid;
             gap: 15px;
-            position: relative;
+            margin: 0 auto;
+            width: fit-content;
         }
         
         .grid-cell {
             position: relative;
-            border: 2px dashed #ddd;
+            border: 2px solid #ddd;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -243,18 +241,20 @@
             background: #f9f9f9;
             border-radius: 5px;
             transition: all 0.3s ease;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
         }
         
         .grid-cell:hover {
             border-color: #3498db;
             transform: scale(1.02);
+            box-shadow: 0 5px 12px rgba(0, 0, 0, 0.15);
         }
         
         .grid-cell img {
-            max-width: 100%;
-            max-height: 100%;
+            width: 100%;
+            height: 100%;
             object-fit: cover;
-            transition: all 0.3s ease;
+            display: block;
         }
         
         .number-overlay {
@@ -291,12 +291,12 @@
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
         
-        .print-btn {
+        .download-btn {
             background: linear-gradient(to right, #27ae60, #2ecc71);
             color: white;
         }
         
-        .print-btn:hover {
+        .download-btn:hover {
             background: linear-gradient(to right, #219653, #27ae60);
         }
         
@@ -317,44 +317,10 @@
             .preview-section {
                 width: 100%;
             }
-            
-            .a4-preview-container {
-                width: 100%;
-                height: auto;
-                aspect-ratio: 1/1.414;
-            }
         }
         
         .hidden {
             display: none;
-        }
-        
-        /* تنسيقات خاصة للطباعة */
-        @media print {
-            body * {
-                visibility: hidden;
-            }
-            
-            .a4-preview-container, .a4-preview-container * {
-                visibility: visible;
-            }
-            
-            .a4-preview-container {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-                height: 100%;
-                box-shadow: none;
-                padding: 0;
-                margin: 0;
-                border: none;
-            }
-            
-            .number-overlay {
-                color: black !important;
-                text-shadow: none !important;
-            }
         }
 
         .instructions {
@@ -377,13 +343,22 @@
         .instructions li {
             margin-bottom: 8px;
         }
+
+        .cell-size-control {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .cell-size-control .form-group {
+            flex: 1;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>تطبيق إنشاء شبكة الصور مع الأرقام العربية</h1>
-            <p class="app-description">قم بتحميل صورة، أنشئ شبكة الصور، أضف الأرقام العربية، وقم بتخصيصها بالكامل ثم اطبع النتيجة</p>
+            <h1>تطبيق توليد شبكة الصور</h1>
+            <p class="app-description">قم بتحميل صورة، أنشئ شبكة منها، وأضف الأرقام العربية مع تخصيص موضعها</p>
         </header>
         
         <main class="app-content">
@@ -409,6 +384,18 @@
                         <input type="number" id="rows" min="1" max="10" value="3">
                     </div>
                 </div>
+
+                <div class="cell-size-control">
+                    <div class="form-group">
+                        <label for="cellWidth">عرض الخلية (بكسل):</label>
+                        <input type="number" id="cellWidth" min="50" max="500" value="200">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="cellHeight">ارتفاع الخلية (بكسل):</label>
+                        <input type="number" id="cellHeight" min="50" max="500" value="200">
+                    </div>
+                </div>
                 
                 <div class="form-group">
                     <label for="startNumber">الرقم البدائي:</label>
@@ -428,8 +415,8 @@
                 <div class="form-group">
                     <label>حجم الرقم:</label>
                     <div class="slider-container">
-                        <input type="range" id="numberSize" min="50" max="300" value="180">
-                        <span class="slider-value" id="numberSizeValue">180px</span>
+                        <input type="range" id="numberSize" min="20" max="200" value="80">
+                        <span class="slider-value" id="numberSizeValue">80px</span>
                     </div>
                 </div>
                 
@@ -449,47 +436,28 @@
                     </div>
                 </div>
                 
-                <h3>تخصيص الصور</h3>
-                
-                <div class="form-group">
-                    <label>حجم الصورة داخل الخلية:</label>
-                    <div class="slider-container">
-                        <input type="range" id="imageSize" min="50" max="150" value="100">
-                        <span class="slider-value" id="imageSizeValue">100%</span>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="imageStyle">نمط الصورة:</label>
-                    <select id="imageStyle">
-                        <option value="cover">تغطية (Cover)</option>
-                        <option value="contain">احتواء (Contain)</option>
-                        <option value="stretch">تمديد (Stretch)</option>
-                    </select>
-                </div>
-                
                 <div class="instructions">
                     <h3>كيفية الاستخدام:</h3>
                     <ol>
                         <li>اختر صورة لملء الشبكة</li>
                         <li>حدد عدد الأعمدة والصفوف</li>
+                        <li>اضبط حجم الخلايا حسب الحاجة</li>
                         <li>اضبط خصائص الأرقام من حيث الحجم واللون والموضع</li>
-                        <li>اضبط حجم الصورة ونمط العرض</li>
-                        <li>اطبع النتيجة عندما تكون راضياً عن المعاينة</li>
+                        <li>استمتع بالنتيجة!</li>
                     </ol>
                 </div>
             </section>
             
             <section class="preview-section">
-                <h2>معاينة الصورة (مقاس A4)</h2>
-                <div class="a4-preview-container">
-                    <div class="a4-content" id="gridContainer">
+                <h2>معاينة الشبكة</h2>
+                <div class="preview-container">
+                    <div class="image-grid" id="gridContainer">
                         <!-- سيتم إنشاء الخلايا الشبكية هنا via JavaScript -->
                     </div>
                 </div>
                 
                 <div class="action-buttons">
-                    <button class="action-btn print-btn" id="printBtn">طباعة الصورة</button>
+                    <button class="action-btn download-btn" id="downloadBtn">حفظ الشبكة</button>
                     <button class="action-btn reset-btn" id="resetBtn">بدء من جديد</button>
                 </div>
             </section>
@@ -510,13 +478,12 @@
             const positionXValue = document.getElementById('positionXValue');
             const positionY = document.getElementById('positionY');
             const positionYValue = document.getElementById('positionYValue');
-            const imageSize = document.getElementById('imageSize');
-            const imageSizeValue = document.getElementById('imageSizeValue');
-            const imageStyle = document.getElementById('imageStyle');
             const columnsInput = document.getElementById('columns');
             const rowsInput = document.getElementById('rows');
+            const cellWidthInput = document.getElementById('cellWidth');
+            const cellHeightInput = document.getElementById('cellHeight');
             const gridContainer = document.getElementById('gridContainer');
-            const printBtn = document.getElementById('printBtn');
+            const downloadBtn = document.getElementById('downloadBtn');
             const resetBtn = document.getElementById('resetBtn');
             
             // حالة التطبيق
@@ -533,12 +500,14 @@
             function createGrid() {
                 const columns = parseInt(columnsInput.value) || 3;
                 const rows = parseInt(rowsInput.value) || 3;
+                const cellWidth = parseInt(cellWidthInput.value) || 200;
+                const cellHeight = parseInt(cellHeightInput.value) || 200;
                 const startNumber = parseInt(startNumberInput.value) || 1;
                 
                 // مسح المحتوى الحالي
                 gridContainer.innerHTML = '';
-                gridContainer.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
-                gridContainer.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+                gridContainer.style.gridTemplateColumns = `repeat(${columns}, ${cellWidth}px)`;
+                gridContainer.style.gridTemplateRows = `repeat(${rows}, ${cellHeight}px)`;
                 
                 currentCells = [];
                 
@@ -547,6 +516,8 @@
                     const cell = document.createElement('div');
                     cell.className = 'grid-cell';
                     cell.id = `cell-${i}`;
+                    cell.style.width = `${cellWidth}px`;
+                    cell.style.height = `${cellHeight}px`;
                     
                     const numberOverlay = document.createElement('div');
                     numberOverlay.className = 'number-overlay';
@@ -568,7 +539,6 @@
                 // إذا كانت هناك صورة محملة، أضفها إلى الخلايا
                 if (currentImage) {
                     addImageToCells();
-                    updateImageProperties();
                 }
             }
             
@@ -582,21 +552,6 @@
                 element.style.transform = 'translate(-50%, -50%)';
                 element.style.right = 'auto';
                 element.style.bottom = 'auto';
-            }
-            
-            // تحديث خصائص الصورة داخل الخلايا
-            function updateImageProperties() {
-                const size = imageSize.value;
-                const style = imageStyle.value;
-                
-                currentCells.forEach(cell => {
-                    const img = cell.element.querySelector('img');
-                    if (img) {
-                        img.style.width = `${size}%`;
-                        img.style.height = `${size}%`;
-                        img.style.objectFit = style;
-                    }
-                });
             }
             
             // تحديث جميع الأرقام في الخلايا
@@ -621,7 +576,6 @@
                 reader.onload = function(e) {
                     currentImage = e.target.result;
                     addImageToCells();
-                    updateImageProperties();
                 };
                 reader.readAsDataURL(file);
             }
@@ -638,7 +592,11 @@
                     // إضافة الصورة الجديدة
                     const img = document.createElement('img');
                     img.src = currentImage;
+                    img.alt = "صورة الشبكة";
                     cell.element.appendChild(img);
+                    
+                    // التأكد من أن الرقم يظهر فوق الصورة
+                    cell.element.appendChild(cell.numberElement);
                 });
             }
             
@@ -647,7 +605,13 @@
                 numberSizeValue.textContent = `${numberSize.value}px`;
                 positionXValue.textContent = `${positionX.value}%`;
                 positionYValue.textContent = `${positionY.value}%`;
-                imageSizeValue.textContent = `${imageSize.value}%`;
+            }
+            
+            // حفظ الشبكة كصورة
+            function downloadGrid() {
+                // في تطبيق حقيقي، هنا سيتم استخدام مكتبة مثل html2canvas
+                // لالتقاط الشبكة وتحويلها إلى صورة للتحميل
+                alert('في التطبيق الكامل، سيتم حفظ الشبكة كصورة هنا. هذه مجرد معاينة.');
             }
             
             // إعداد event listeners
@@ -683,19 +647,12 @@
                 });
             });
             
-            imageSize.addEventListener('input', function() {
-                updateSliderValues();
-                updateImageProperties();
-            });
-            
-            imageStyle.addEventListener('change', updateImageProperties);
-            
             columnsInput.addEventListener('input', createGrid);
             rowsInput.addEventListener('input', createGrid);
+            cellWidthInput.addEventListener('input', createGrid);
+            cellHeightInput.addEventListener('input', createGrid);
             
-            printBtn.addEventListener('click', function() {
-                window.print();
-            });
+            downloadBtn.addEventListener('click', downloadGrid);
             
             resetBtn.addEventListener('click', function() {
                 imageUpload.value = '';
@@ -703,13 +660,13 @@
                 startNumberInput.value = 1;
                 numberColor.value = '#e74c3c';
                 colorValue.textContent = '#e74c3c';
-                numberSize.value = 180;
+                numberSize.value = 80;
                 positionX.value = 85;
                 positionY.value = 85;
-                imageSize.value = 100;
-                imageStyle.value = 'cover';
                 columnsInput.value = 3;
                 rowsInput.value = 3;
+                cellWidthInput.value = 200;
+                cellHeightInput.value = 200;
                 
                 updateSliderValues();
                 
