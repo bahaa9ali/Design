@@ -226,7 +226,6 @@
         
         .image-grid {
             display: grid;
-            gap: 15px;
             margin: 0 auto;
             width: fit-content;
         }
@@ -291,12 +290,12 @@
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
         
-        .download-btn {
+        .print-btn {
             background: linear-gradient(to right, #27ae60, #2ecc71);
             color: white;
         }
         
-        .download-btn:hover {
+        .print-btn:hover {
             background: linear-gradient(to right, #219653, #27ae60);
         }
         
@@ -352,6 +351,39 @@
         .cell-size-control .form-group {
             flex: 1;
         }
+
+        /* تنسيقات خاصة للطباعة */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            
+            .preview-container, .preview-container * {
+                visibility: visible;
+            }
+            
+            .preview-container {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                box-shadow: none;
+                padding: 0;
+                margin: 0;
+                border: none;
+                background: white;
+            }
+            
+            .number-overlay {
+                color: black !important;
+                text-shadow: none !important;
+            }
+
+            .action-buttons, .control-panel, header {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -376,24 +408,49 @@
                 <div class="grid-config">
                     <div class="form-group">
                         <label for="columns">عدد الأعمدة:</label>
-                        <input type="number" id="columns" min="1" max="10" value="3">
+                        <input type="number" id="columns" min="1" max="20" value="3">
                     </div>
                     
                     <div class="form-group">
                         <label for="rows">عدد الصفوف:</label>
-                        <input type="number" id="rows" min="1" max="10" value="3">
+                        <input type="number" id="rows" min="1" max="20" value="3">
                     </div>
                 </div>
 
-                <div class="cell-size-control">
-                    <div class="form-group">
-                        <label for="cellWidth">عرض الخلية (بكسل):</label>
-                        <input type="number" id="cellWidth" min="50" max="500" value="200">
+                <div class="form-group">
+                    <label for="totalNumbers">عدد الأرقام المطلوبة:</label>
+                    <input type="number" id="totalNumbers" min="1" max="400" value="9">
+                </div>
+                
+                <div class="form-group">
+                    <label>عرض الخلية:</label>
+                    <div class="slider-container">
+                        <input type="range" id="cellWidth" min="50" max="500" value="200">
+                        <span class="slider-value" id="cellWidthValue">200px</span>
                     </div>
-                    
-                    <div class="form-group">
-                        <label for="cellHeight">ارتفاع الخلية (بكسل):</label>
-                        <input type="number" id="cellHeight" min="50" max="500" value="200">
+                </div>
+
+                <div class="form-group">
+                    <label>ارتفاع الخلية:</label>
+                    <div class="slider-container">
+                        <input type="range" id="cellHeight" min="50" max="500" value="200">
+                        <span class="slider-value" id="cellHeightValue">200px</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>المسافة الأفقية بين الصور:</label>
+                    <div class="slider-container">
+                        <input type="range" id="horizontalGap" min="0" max="50" value="15">
+                        <span class="slider-value" id="horizontalGapValue">15px</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>المسافة العمودية بين الصور:</label>
+                    <div class="slider-container">
+                        <input type="range" id="verticalGap" min="0" max="50" value="15">
+                        <span class="slider-value" id="verticalGapValue">15px</span>
                     </div>
                 </div>
                 
@@ -440,10 +497,10 @@
                     <h3>كيفية الاستخدام:</h3>
                     <ol>
                         <li>اختر صورة لملء الشبكة</li>
-                        <li>حدد عدد الأعمدة والصفوف</li>
-                        <li>اضبط حجم الخلايا حسب الحاجة</li>
+                        <li>حدد عدد الأعمدة والصفوف وعدد الأرقام</li>
+                        <li>اضبط حجم الخلايا والمسافات بينها</li>
                         <li>اضبط خصائص الأرقام من حيث الحجم واللون والموضع</li>
-                        <li>استمتع بالنتيجة!</li>
+                        <li>اطبع النتيجة عندما تكون راضياً عنها</li>
                     </ol>
                 </div>
             </section>
@@ -457,7 +514,7 @@
                 </div>
                 
                 <div class="action-buttons">
-                    <button class="action-btn download-btn" id="downloadBtn">حفظ الشبكة</button>
+                    <button class="action-btn print-btn" id="printBtn">طباعة الشبكة</button>
                     <button class="action-btn reset-btn" id="resetBtn">بدء من جديد</button>
                 </div>
             </section>
@@ -470,6 +527,7 @@
             const uploadTrigger = document.getElementById('uploadTrigger');
             const imageUpload = document.getElementById('imageUpload');
             const startNumberInput = document.getElementById('startNumber');
+            const totalNumbersInput = document.getElementById('totalNumbers');
             const numberColor = document.getElementById('numberColor');
             const colorValue = document.getElementById('colorValue');
             const numberSize = document.getElementById('numberSize');
@@ -480,10 +538,16 @@
             const positionYValue = document.getElementById('positionYValue');
             const columnsInput = document.getElementById('columns');
             const rowsInput = document.getElementById('rows');
-            const cellWidthInput = document.getElementById('cellWidth');
-            const cellHeightInput = document.getElementById('cellHeight');
+            const cellWidth = document.getElementById('cellWidth');
+            const cellWidthValue = document.getElementById('cellWidthValue');
+            const cellHeight = document.getElementById('cellHeight');
+            const cellHeightValue = document.getElementById('cellHeightValue');
+            const horizontalGap = document.getElementById('horizontalGap');
+            const horizontalGapValue = document.getElementById('horizontalGapValue');
+            const verticalGap = document.getElementById('verticalGap');
+            const verticalGapValue = document.getElementById('verticalGapValue');
             const gridContainer = document.getElementById('gridContainer');
-            const downloadBtn = document.getElementById('downloadBtn');
+            const printBtn = document.getElementById('printBtn');
             const resetBtn = document.getElementById('resetBtn');
             
             // حالة التطبيق
@@ -500,24 +564,29 @@
             function createGrid() {
                 const columns = parseInt(columnsInput.value) || 3;
                 const rows = parseInt(rowsInput.value) || 3;
-                const cellWidth = parseInt(cellWidthInput.value) || 200;
-                const cellHeight = parseInt(cellHeightInput.value) || 200;
+                const totalNumbers = parseInt(totalNumbersInput.value) || 9;
+                const cellWidthVal = parseInt(cellWidth.value) || 200;
+                const cellHeightVal = parseInt(cellHeight.value) || 200;
+                const horizontalGapVal = parseInt(horizontalGap.value) || 15;
+                const verticalGapVal = parseInt(verticalGap.value) || 15;
                 const startNumber = parseInt(startNumberInput.value) || 1;
                 
                 // مسح المحتوى الحالي
                 gridContainer.innerHTML = '';
-                gridContainer.style.gridTemplateColumns = `repeat(${columns}, ${cellWidth}px)`;
-                gridContainer.style.gridTemplateRows = `repeat(${rows}, ${cellHeight}px)`;
+                gridContainer.style.gridTemplateColumns = `repeat(${columns}, ${cellWidthVal}px)`;
+                gridContainer.style.gridTemplateRows = `repeat(${rows}, ${cellHeightVal}px)`;
+                gridContainer.style.gap = `${verticalGapVal}px ${horizontalGapVal}px`;
                 
                 currentCells = [];
                 
                 // إنشاء الخلايا
-                for (let i = 0; i < columns * rows; i++) {
+                const totalCells = Math.min(columns * rows, totalNumbers);
+                for (let i = 0; i < totalCells; i++) {
                     const cell = document.createElement('div');
                     cell.className = 'grid-cell';
                     cell.id = `cell-${i}`;
-                    cell.style.width = `${cellWidth}px`;
-                    cell.style.height = `${cellHeight}px`;
+                    cell.style.width = `${cellWidthVal}px`;
+                    cell.style.height = `${cellHeightVal}px`;
                     
                     const numberOverlay = document.createElement('div');
                     numberOverlay.className = 'number-overlay';
@@ -605,13 +674,10 @@
                 numberSizeValue.textContent = `${numberSize.value}px`;
                 positionXValue.textContent = `${positionX.value}%`;
                 positionYValue.textContent = `${positionY.value}%`;
-            }
-            
-            // حفظ الشبكة كصورة
-            function downloadGrid() {
-                // في تطبيق حقيقي، هنا سيتم استخدام مكتبة مثل html2canvas
-                // لالتقاط الشبكة وتحويلها إلى صورة للتحميل
-                alert('في التطبيق الكامل، سيتم حفظ الشبكة كصورة هنا. هذه مجرد معاينة.');
+                cellWidthValue.textContent = `${cellWidth.value}px`;
+                cellHeightValue.textContent = `${cellHeight.value}px`;
+                horizontalGapValue.textContent = `${horizontalGap.value}px`;
+                verticalGapValue.textContent = `${verticalGap.value}px`;
             }
             
             // إعداد event listeners
@@ -622,6 +688,7 @@
             imageUpload.addEventListener('change', loadImage);
             
             startNumberInput.addEventListener('input', updateAllNumbers);
+            totalNumbersInput.addEventListener('input', createGrid);
             
             numberColor.addEventListener('input', function() {
                 colorValue.textContent = this.value;
@@ -649,15 +716,20 @@
             
             columnsInput.addEventListener('input', createGrid);
             rowsInput.addEventListener('input', createGrid);
-            cellWidthInput.addEventListener('input', createGrid);
-            cellHeightInput.addEventListener('input', createGrid);
+            cellWidth.addEventListener('input', createGrid);
+            cellHeight.addEventListener('input', createGrid);
+            horizontalGap.addEventListener('input', createGrid);
+            verticalGap.addEventListener('input', createGrid);
             
-            downloadBtn.addEventListener('click', downloadGrid);
+            printBtn.addEventListener('click', function() {
+                window.print();
+            });
             
             resetBtn.addEventListener('click', function() {
                 imageUpload.value = '';
                 currentImage = null;
                 startNumberInput.value = 1;
+                totalNumbersInput.value = 9;
                 numberColor.value = '#e74c3c';
                 colorValue.textContent = '#e74c3c';
                 numberSize.value = 80;
@@ -665,8 +737,10 @@
                 positionY.value = 85;
                 columnsInput.value = 3;
                 rowsInput.value = 3;
-                cellWidthInput.value = 200;
-                cellHeightInput.value = 200;
+                cellWidth.value = 200;
+                cellHeight.value = 200;
+                horizontalGap.value = 15;
+                verticalGap.value = 15;
                 
                 updateSliderValues();
                 
