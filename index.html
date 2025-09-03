@@ -574,13 +574,13 @@
                 // مسح المحتوى الحالي
                 gridContainer.innerHTML = '';
                 gridContainer.style.gridTemplateColumns = `repeat(${columns}, ${cellWidthVal}px)`;
-                gridContainer.style.gridTemplateRows = `repeat(${rows}, ${cellHeightVal}px)`;
+                gridContainer.style.gridTemplateRows = `repeat(${Math.ceil(totalNumbers / columns)}, ${cellHeightVal}px)`;
                 gridContainer.style.gap = `${verticalGapVal}px ${horizontalGapVal}px`;
                 
                 currentCells = [];
                 
-                // إنشاء الخلايا
-                const totalCells = Math.min(columns * rows, totalNumbers);
+                // إنشاء الخلايا - التصحيح هنا: استخدام totalNumbers مباشرة بدلاً من الحد الأدنى
+                const totalCells = totalNumbers;
                 for (let i = 0; i < totalCells; i++) {
                     const cell = document.createElement('div');
                     cell.className = 'grid-cell';
