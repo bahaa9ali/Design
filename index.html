@@ -6,11 +6,11 @@
 <title>تعديل الصور بالأرقام العربية</title>
 <style>
   body { font-family: 'Tahoma', sans-serif; display: flex; flex-direction: column; align-items: center; margin: 20px; }
-  #canvas { border: 1px solid #ccc; margin-top: 10px; cursor: grab; }
+  #canvas { display:none; } /* لا حاجة للعرض الأساسي */
   .controls { margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap; }
   input, select, button { padding: 5px; font-size: 16px; }
   #preview { margin-top: 20px; display: grid; gap: 10px; grid-template-columns: repeat(3, 1fr); }
-  #preview canvas { border: 1px solid #aaa; width: 100%; }
+  #preview img { border: 1px solid #aaa; width: 100%; cursor: grab; }
 </style>
 </head>
 <body>
@@ -47,8 +47,6 @@ let canvas = document.getElementById('canvas');
 let ctx = canvas.getContext('2d');
 let img = new Image();
 let numbers = [];
-let selectedNumber = null;
-let offsetX, offsetY;
 
 // تحميل الصورة
 document.getElementById('imageInput').addEventListener('change', e => {
@@ -57,61 +55,19 @@ document.getElementById('imageInput').addEventListener('change', e => {
         const reader = new FileReader();
         reader.onload = event => {
             img.src = event.target.result;
-            img.onload = () => draw();
         }
         reader.readAsDataURL(file);
     }
 });
 
-// إضافة الرقم (يمكن تحريكه)
+// إضافة الرقم الأساسي (موضع افتراضي)
 document.getElementById('addNumber').addEventListener('click', () => {
     const color = document.getElementById('colorInput').value;
     const font = document.getElementById('fontSelect').value;
     const size = parseInt(document.getElementById('fontSize').value);
     numbers.push({x: 50, y: 50, color, font, size});
-    draw();
+    alert('تم إضافة الرقم. يمكن سحبه في المعاينة بعد عرضها.');
 });
-
-// رسم الصورة والأرقام
-function draw(number=null){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    if(img.src) ctx.drawImage(img,0,0,canvas.width,canvas.height);
-    numbers.forEach(n => {
-        ctx.fillStyle = n.color;
-        ctx.font = `${n.size}px ${n.font}`;
-        ctx.fillText(number!==null ? toArabicNumber(number) : '', n.x, n.y);
-    });
-}
-
-// سحب الرقم داخل المعاينة
-canvas.addEventListener('mousedown', e => {
-    const rect = canvas.getBoundingClientRect();
-    const mx = e.clientX - rect.left;
-    const my = e.clientY - rect.top;
-    selectedNumber = null;
-    for(let i = numbers.length-1;i>=0;i--){
-        let n = numbers[i];
-        ctx.font = `${n.size}px ${n.font}`;
-        let width = ctx.measureText('0').width;
-        let height = n.size;
-        if(mx >= n.x && mx <= n.x + width && my <= n.y && my >= n.y - height){
-            selectedNumber = n;
-            offsetX = mx - n.x;
-            offsetY = my - n.y;
-            break;
-        }
-    }
-});
-canvas.addEventListener('mousemove', e => {
-    if(selectedNumber){
-        const rect = canvas.getBoundingClientRect();
-        selectedNumber.x = e.clientX - rect.left - offsetX;
-        selectedNumber.y = e.clientY - rect.top - offsetY;
-        draw();
-    }
-});
-canvas.addEventListener('mouseup', ()=> selectedNumber=null);
-canvas.addEventListener('mouseout', ()=> selectedNumber=null);
 
 // عرض المعاينة
 document.getElementById('previewButton').addEventListener('click', () => {
@@ -121,61 +77,77 @@ document.getElementById('previewButton').addEventListener('click', () => {
 
     const previewDiv = document.getElementById('preview');
     previewDiv.innerHTML = '';
+
     for(let i=start;i<=end;i++){
         let tempCanvas = document.createElement('canvas');
         tempCanvas.width = 250;
         tempCanvas.height = 180;
         let tempCtx = tempCanvas.getContext('2d');
-        tempCtx.drawImage(img,0,0,tempCanvas.width,tempCanvas.height);
-        numbers.forEach(n=>{
-            tempCtx.fillStyle = n.color;
-            tempCtx.font = `${n.size}px ${n.font}`;
-            tempCtx.fillText(toArabicNumber(i), n.x/800*tempCanvas.width, n.y/600*tempCanvas.height);
-        });
-        // تمكين تحريك الرقم داخل المعاينة
+
+        // نسخة مستقلة من الأرقام لكل صفحة
+        let pageNumbers = numbers.map(n => ({...n}));
+
+        function drawPage(){
+            tempCtx.clearRect(0,0,tempCanvas.width,tempCanvas.height);
+            tempCtx.drawImage(img,0,0,tempCanvas.width,tempCanvas.height);
+            pageNumbers.forEach(n=>{
+                tempCtx.fillStyle = n.color;
+                tempCtx.font = `${n.size}px ${n.font}`;
+                tempCtx.fillText(toArabicNumber(i), n.x/800*tempCanvas.width, n.y/600*tempCanvas.height);
+            });
+        }
+
+        drawPage();
+
+        // تمكين سحب الرقم داخل هذه الصفحة فقط
+        let selected = null, offsetX=0, offsetY=0;
         tempCanvas.addEventListener('mousedown', e => {
-            let rect = tempCanvas.getBoundingClientRect();
-            let mx = e.clientX - rect.left;
-            let my = e.clientY - rect.top;
-            let selected = null;
-            for(let j = numbers.length-1;j>=0;j--){
-                let n = numbers[j];
+            const rect = tempCanvas.getBoundingClientRect();
+            const mx = e.clientX - rect.left;
+            const my = e.clientY - rect.top;
+            selected = null;
+            for(let j=pageNumbers.length-1;j>=0;j--){
+                let n = pageNumbers[j];
                 let width = tempCtx.measureText('0').width;
                 let height = n.size;
-                if(mx >= n.x/800*tempCanvas.width && mx <= n.x/800*tempCanvas.width + width && my <= n.y/600*tempCanvas.height && my >= n.y/600*tempCanvas.height - height){
+                let nx = n.x/800*tempCanvas.width;
+                let ny = n.y/600*tempCanvas.height;
+                if(mx>=nx && mx<=nx+width && my<=ny && my>=ny-height){
                     selected = n;
-                    offsetX = mx - n.x/800*tempCanvas.width;
-                    offsetY = my - n.y/600*tempCanvas.height;
-                    function move(e){
-                        let mx2 = e.clientX - rect.left - offsetX;
-                        let my2 = e.clientY - rect.top - offsetY;
-                        n.x = mx2/ (tempCanvas.width/800);
-                        n.y = my2/ (tempCanvas.height/600);
-                        tempCtx.clearRect(0,0,tempCanvas.width,tempCanvas.height);
-                        tempCtx.drawImage(img,0,0,tempCanvas.width,tempCanvas.height);
-                        numbers.forEach(nn=>{
-                            tempCtx.fillStyle = nn.color;
-                            tempCtx.font = `${nn.size}px ${nn.font}`;
-                            tempCtx.fillText(toArabicNumber(i), nn.x/800*tempCanvas.width, nn.y/600*tempCanvas.height);
-                        });
-                    }
-                    function up(){ window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', up);}
-                    window.addEventListener('mousemove', move);
-                    window.addEventListener('mouseup', up);
+                    offsetX = mx - nx;
+                    offsetY = my - ny;
                     break;
                 }
             }
         });
+        tempCanvas.addEventListener('mousemove', e => {
+            if(selected){
+                const rect = tempCanvas.getBoundingClientRect();
+                let mx = e.clientX - rect.left;
+                let my = e.clientY - rect.top;
+                selected.x = (mx - offsetX)/(tempCanvas.width/800);
+                selected.y = (my - offsetY)/(tempCanvas.height/600);
+                drawPage();
+            }
+        });
+        tempCanvas.addEventListener('mouseup', ()=> selected=null);
+        tempCanvas.addEventListener('mouseout', ()=> selected=null);
+
+        // بعد الرسم، نستخدم الصورة النهائية في الطباعة
+        tempCanvas.dataset.number = i;
+
         previewDiv.appendChild(tempCanvas);
     }
 });
 
-// طباعة ما هو في المعاينة
+// طباعة المعاينة
 document.getElementById('printButton').addEventListener('click', () => {
-    let previewContent = document.getElementById('preview').innerHTML;
+    const previewDiv = document.getElementById('preview');
     let printWindow = window.open('', '', 'width=800,height=600');
-    printWindow.document.write('<html><head><title>الطباعة</title></head><body>');
-    printWindow.document.write(previewContent);
+    printWindow.document.write('<html><head><title>الطباعة</title></head><body style="display:flex;flex-wrap:wrap;justify-content:flex-start;">');
+    Array.from(previewDiv.children).forEach(c=>{
+        printWindow.document.write(`<img src="${c.toDataURL()}" style="margin:5px; width:250px; height:180px;">`);
+    });
     printWindow.document.write('</body></html>');
     printWindow.document.close();
     printWindow.focus();
