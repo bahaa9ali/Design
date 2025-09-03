@@ -9,15 +9,18 @@
   canvas { border: 1px solid #ccc; margin-top: 10px; cursor: grab; }
   .controls { margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap; }
   input, select, button { padding: 5px; font-size: 16px; }
+  #preview { margin-top: 20px; display: grid; gap: 10px; grid-template-columns: repeat(3, 1fr); }
+  #preview canvas { border: 1px solid #aaa; width: 100%; }
 </style>
 </head>
 <body>
 
-<h2>تطبيق تعديل الصور بالأرقام</h2>
+<h2>تطبيق تعديل الصور بالأرقام مع معاينة A4</h2>
 
 <div class="controls">
   <input type="file" id="imageInput" accept="image/*">
-  <input type="number" id="numberInput" placeholder="أدخل الرقم الأول" min="1" value="1">
+  <input type="number" id="startNumber" placeholder="الرقم الأول" min="1" value="1">
+  <input type="number" id="endNumber" placeholder="الرقم الأخير" min="1" value="10">
   <input type="color" id="colorInput" value="#ff0000">
   <select id="fontSelect">
     <option value="Meri">Meri</option>
@@ -26,12 +29,13 @@
   </select>
   <input type="number" id="fontSize" placeholder="حجم الخط" value="40">
   <button id="addNumber">أضف الرقم</button>
-  <button id="exportPDF">حفظ/طباعة</button>
+  <button id="previewButton">عرض المعاينة</button>
+  <button id="printButton">طباعة</button>
 </div>
 
 <canvas id="canvas" width="800" height="600"></canvas>
+<div id="preview"></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 let canvas = document.getElementById('canvas');
 let ctx = canvas.getContext('2d');
@@ -53,24 +57,23 @@ document.getElementById('imageInput').addEventListener('change', e => {
     }
 });
 
-// إضافة الرقم
+// إضافة الرقم (يمكن تحريكه)
 document.getElementById('addNumber').addEventListener('click', () => {
-    const num = parseInt(document.getElementById('numberInput').value);
     const color = document.getElementById('colorInput').value;
     const font = document.getElementById('fontSelect').value;
     const size = parseInt(document.getElementById('fontSize').value);
-    numbers.push({num, x: 50, y: 50, color, font, size});
+    numbers.push({x: 50, y: 50, color, font, size});
     draw();
 });
 
 // رسم الصورة والأرقام
-function draw(){
+function draw(number=null){
     ctx.clearRect(0,0,canvas.width,canvas.height);
     if(img.src) ctx.drawImage(img,0,0,canvas.width,canvas.height);
     numbers.forEach(n => {
         ctx.fillStyle = n.color;
         ctx.font = `${n.size}px ${n.font}`;
-        ctx.fillText(n.num, n.x, n.y);
+        ctx.fillText(number!==null ? number : '', n.x, n.y);
     });
 }
 
@@ -83,7 +86,7 @@ canvas.addEventListener('mousedown', e => {
     for(let i = numbers.length-1;i>=0;i--){
         let n = numbers[i];
         ctx.font = `${n.size}px ${n.font}`;
-        let width = ctx.measureText(n.num).width;
+        let width = ctx.measureText('0').width;
         let height = n.size;
         if(mx >= n.x && mx <= n.x + width && my <= n.y && my >= n.y - height){
             selectedNumber = n;
@@ -93,7 +96,6 @@ canvas.addEventListener('mousedown', e => {
         }
     }
 });
-
 canvas.addEventListener('mousemove', e => {
     if(selectedNumber){
         const rect = canvas.getBoundingClientRect();
@@ -102,39 +104,35 @@ canvas.addEventListener('mousemove', e => {
         draw();
     }
 });
-
 canvas.addEventListener('mouseup', ()=> selectedNumber=null);
 canvas.addEventListener('mouseout', ()=> selectedNumber=null);
 
-// حفظ/طباعة PDF
-document.getElementById('exportPDF').addEventListener('click', () => {
-    let count = parseInt(prompt("أدخل العدد النهائي للأرقام:"));
-    if(isNaN(count) || count < 1) return alert("الرجاء إدخال عدد صحيح أكبر من 0");
-    const { jsPDF } = window.jspdf;
-    let pdf = new jsPDF({orientation: "landscape", unit:"px", format:"a4"});
-    const rowLimit = 3; // عدد الصور في الصف الواحد
-    let x = 10, y = 10, imgW = 250, imgH = 180;
-    for(let i=1;i<=count;i++){
-        ctx.clearRect(0,0,canvas.width,canvas.height);
-        ctx.drawImage(img,0,0,canvas.width,canvas.height);
-        numbers.forEach(n => {
-            ctx.fillStyle = n.color;
-            ctx.font = `${n.size}px ${n.font}`;
-            ctx.fillText(i, n.x, n.y); // كل صورة بالرقم الحالي
+// عرض المعاينة
+document.getElementById('previewButton').addEventListener('click', () => {
+    const start = parseInt(document.getElementById('startNumber').value);
+    const end = parseInt(document.getElementById('endNumber').value);
+    if(isNaN(start) || isNaN(end) || start > end) return alert("أدخل أرقام صحيحة");
+
+    const previewDiv = document.getElementById('preview');
+    previewDiv.innerHTML = '';
+    for(let i=start;i<=end;i++){
+        let tempCanvas = document.createElement('canvas');
+        tempCanvas.width = 250;
+        tempCanvas.height = 180;
+        let tempCtx = tempCanvas.getContext('2d');
+        tempCtx.drawImage(img,0,0,tempCanvas.width,tempCanvas.height);
+        numbers.forEach(n=>{
+            tempCtx.fillStyle = n.color;
+            tempCtx.font = `${n.size}px ${n.font}`;
+            tempCtx.fillText(i,n.x/800*tempCanvas.width,n.y/600*tempCanvas.height);
         });
-        let dataURL = canvas.toDataURL("image/png");
-        pdf.addImage(dataURL,'PNG', x, y, imgW, imgH);
-        x += imgW + 10;
-        if(i % rowLimit === 0){
-            x = 10;
-            y += imgH + 10;
-            if(y + imgH > pdf.internal.pageSize.getHeight()){
-                pdf.addPage();
-                y = 10;
-            }
-        }
+        previewDiv.appendChild(tempCanvas);
     }
-    pdf.save("output.pdf");
+});
+
+// طباعة المعاينة
+document.getElementById('printButton').addEventListener('click', () => {
+    window.print();
 });
 </script>
 
