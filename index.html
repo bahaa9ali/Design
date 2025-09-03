@@ -1,144 +1,551 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>شبكة22 الصور بالأرقام المتسلسلة</title>
-<style>
-body { font-family: 'Tahoma', sans-serif; display: flex; flex-direction: column; align-items: center; margin: 20px; }
-.controls { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 10px; }
-input, select, button, label { padding: 5px; font-size: 16px; }
-#preview { margin-top: 20px; width:210mm; height:297mm; border:1px solid #000; position: relative; background:#fff; overflow:hidden; display:flex; flex-wrap:wrap; justify-content:flex-start; align-content:flex-start; }
-#preview canvas { display:block; cursor: grab; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تطبيق إضافة الأرقام العربية على الصور</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lateef&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            overflow: hidden;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .app-description {
+            color: #7f8c8d;
+            font-size: 16px;
+        }
+        
+        .app-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .image-section {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .controls-section {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .section-title {
+            background-color: #2c3e50;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .image-container {
+            width: 100%;
+            height: 350px;
+            border: 2px dashed #ccc;
+            border-radius: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 15px;
+        }
+        
+        #uploadedImage {
+            max-width: 100%;
+            max-height: 100%;
+            display: none;
+        }
+        
+        .upload-placeholder {
+            text-align: center;
+            color: #7f8c8d;
+        }
+        
+        .upload-icon {
+            font-size: 50px;
+            margin-bottom: 10px;
+            color: #3498db;
+        }
+        
+        .control-group {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .control-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+        }
+        
+        .control-title i {
+            margin-left: 8px;
+            font-size: 18px;
+        }
+        
+        .form-group {
+            margin-bottom: 12px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        input[type="range"], input[type="number"], input[type="color"], select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        input[type="color"] {
+            height: 40px;
+        }
+        
+        .slider-value {
+            display: inline-block;
+            width: 40px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .number-preview {
+            position: absolute;
+            font-family: 'Lateef', cursive;
+            user-select: none;
+            cursor: move;
+            padding: 5px;
+            border: 1px dashed transparent;
+        }
+        
+        .number-preview:hover {
+            border-color: #3498db;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        #addNumberBtn {
+            background-color: #3498db;
+        }
+        
+        #addNumberBtn:hover {
+            background-color: #2980b9;
+        }
+        
+        #saveBtn {
+            background-color: #2ecc71;
+        }
+        
+        #saveBtn:hover {
+            background-color: #27ae60;
+        }
+        
+        #printBtn {
+            background-color: #e74c3c;
+        }
+        
+        #printBtn:hover {
+            background-color: #c0392b;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+        }
+        
+        .modal-title {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 25px;
+        }
+        
+        .modal-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .modal-confirm {
+            background-color: #2ecc71;
+            color: white;
+        }
+        
+        .modal-cancel {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        @media (max-width: 768px) {
+            .app-content {
+                flex-direction: column;
+            }
+        }
+    </style>
 </head>
 <body>
+    <div class="container">
+        <header>
+            <h1>تطبيق إضافة الأرقام العربية على الصور</h1>
+            <p class="app-description">قم بتحميل صورة، أضف الأرقام العربية، وقم بتخصيصها ثم احفظ أو اطبع النتيجة</p>
+        </header>
+        
+        <div class="app-content">
+            <div class="image-section">
+                <div class="section-title">الصورة</div>
+                <div class="image-container">
+                    <img id="uploadedImage" alt="الصورة المحملة">
+                    <div class="upload-placeholder" id="uploadPlaceholder">
+                        <div class="upload-icon">📷</div>
+                        <p>انقر لتحميل صورة من المعرض</p>
+                    </div>
+                </div>
+                <input type="file" id="imageUpload" accept="image/*" style="display: none;">
+                
+                <div class="button-group">
+                    <button id="addNumberBtn">إضافة رقم</button>
+                </div>
+            </div>
+            
+            <div class="controls-section">
+                <div class="section-title">أدوات التحكم</div>
+                
+                <div class="control-group">
+                    <div class="control-title"><i>🔢</i> نطاق الأرقام</div>
+                    <div class="form-group">
+                        <label for="startNumber">من</label>
+                        <input type="number" id="startNumber" value="1" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="endNumber">إلى</label>
+                        <input type="number" id="endNumber" value="10" min="1">
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <div class="control-title"><i>🎨</i> تخصيص المظهر</div>
+                    <div class="form-group">
+                        <label for="fontColor">لون الرقم</label>
+                        <input type="color" id="fontColor" value="#000000">
+                    </div>
+                    <div class="form-group">
+                        <label for="fontSize">حجم الخط <span class="slider-value" id="fontSizeValue">30</span>px</label>
+                        <input type="range" id="fontSize" min="10" max="100" value="30">
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <div class="control-title"><i>↔️</i> تحديد موقع الرقم</div>
+                    <div class="form-group">
+                        <label for="positionX">المحور الأفقي (X) <span class="slider-value" id="positionXValue">50</span>%</label>
+                        <input type="range" id="positionX" min="0" max="100" value="50">
+                    </div>
+                    <div class="form-group">
+                        <label for="positionY">المحور العمودي (Y) <span class="slider-value" id="positionYValue">50</span>%</label>
+                        <input type="range" id="positionY" min="0" max="100" value="50">
+                    </div>
+                </div>
+                
+                <div class="button-group">
+                    <button id="saveBtn">حفظ الصور</button>
+                    <button id="printBtn">طباعة</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="printModal">
+        <div class="modal-content">
+            <h2 class="modal-title">العدد النهائي للأرقام</h2>
+            <p>يرجى تحديد العدد النهائي للأرقام التي تريد إنشاءها:</p>
+            <div class="form-group">
+                <label for="finalNumber">إلى الرقم</label>
+                <input type="number" id="finalNumber" min="1" value="10">
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-confirm" id="confirmPrint">تأكيد</button>
+                <button class="modal-btn modal-cancel" id="cancelPrint">إلغاء</button>
+            </div>
+        </div>
+    </div>
 
-<h2>شبكة الصور بالأرقام المتسلسلة</h2>
-
-<div class="controls">
-  <input type="file" id="imageInput" accept="image/*">
-  <input type="number" id="startNumber" placeholder="الرقم الأول" value="1" min="1">
-  <input type="number" id="columns" placeholder="عدد الأعمدة" value="3" min="1">
-  <input type="number" id="rows" placeholder="عدد الصفوف" value="3" min="1">
-  <input type="number" id="hSpacing" placeholder="المسافة الأفقية" value="10">
-  <input type="number" id="vSpacing" placeholder="المسافة العمودية" value="10">
-  <input type="color" id="colorInput" value="#ff0000">
-  <select id="fontSelect">
-    <option value="Meri">Meri</option>
-    <option value="Arial">Arial</option>
-    <option value="Tahoma">Tahoma</option>
-  </select>
-  <input type="number" id="fontSize" placeholder="حجم الرقم" value="40">
-  <button id="addNumberButton">إضافة الرقم و عرض الشبكة</button>
-  <button id="printButton">طباعة</button>
-</div>
-
-<script>
-// تحويل الرقم للعربية
-function toArabicNumber(num){
-    const arabicNums = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
-    return num.toString().split('').map(d => arabicNums[d]||d).join('');
-}
-
-let img = new Image();
-let offsetX = 0, offsetY = 0;
-
-// تحميل الصورة
-document.getElementById('imageInput').addEventListener('change', e => {
-    const file = e.target.files[0];
-    if(file){
-        const reader = new FileReader();
-        reader.onload = event => { img.src = event.target.result; }
-        reader.readAsDataURL(file);
-    }
-});
-
-document.getElementById('addNumberButton').addEventListener('click', ()=>{
-    const startNum = parseInt(document.getElementById('startNumber').value);
-    const cols = parseInt(document.getElementById('columns').value);
-    const rows = parseInt(document.getElementById('rows').value);
-    const hSpace = parseInt(document.getElementById('hSpacing').value);
-    const vSpace = parseInt(document.getElementById('vSpacing').value);
-    const color = document.getElementById('colorInput').value;
-    const font = document.getElementById('fontSelect').value;
-    const fontSize = parseInt(document.getElementById('fontSize').value);
-
-    if(!img.src) return alert("اختر صورة أولاً");
-
-    const previewDiv = document.getElementById('preview');
-    previewDiv.innerHTML = '';
-    let number = startNum;
-
-    for(let r=0;r<rows;r++){
-        for(let c=0;c<cols;c++){
-            let canvas = document.createElement('canvas');
-            canvas.width = img.width;
-            canvas.height = img.height;
-            let ctx = canvas.getContext('2d');
-
-            function drawImageNumber(){
-                ctx.clearRect(0,0,canvas.width,canvas.height);
-                ctx.drawImage(img,0,0,img.width,img.height);
-                ctx.fillStyle = color;
-                ctx.font = `${fontSize}px ${font}`;
-                ctx.fillText(toArabicNumber(number), offsetX, offsetY + fontSize);
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // عناصر DOM
+            const imageUpload = document.getElementById('imageUpload');
+            const uploadedImage = document.getElementById('uploadedImage');
+            const uploadPlaceholder = document.getElementById('uploadPlaceholder');
+            const addNumberBtn = document.getElementById('addNumberBtn');
+            const saveBtn = document.getElementById('saveBtn');
+            const printBtn = document.getElementById('printBtn');
+            const printModal = document.getElementById('printModal');
+            const confirmPrint = document.getElementById('confirmPrint');
+            const cancelPrint = document.getElementById('cancelPrint');
+            const finalNumber = document.getElementById('finalNumber');
+            
+            // عناصر التحكم
+            const startNumber = document.getElementById('startNumber');
+            const endNumber = document.getElementById('endNumber');
+            const fontColor = document.getElementById('fontColor');
+            const fontSize = document.getElementById('fontSize');
+            const fontSizeValue = document.getElementById('fontSizeValue');
+            const positionX = document.getElementById('positionX');
+            const positionXValue = document.getElementById('positionXValue');
+            const positionY = document.getElementById('positionY');
+            const positionYValue = document.getElementById('positionYValue');
+            
+            // متغيرات التطبيق
+            let currentNumber = 1;
+            let currentElement = null;
+            
+            // تحميل الصورة
+            uploadPlaceholder.addEventListener('click', function() {
+                imageUpload.click();
+            });
+            
+            imageUpload.addEventListener('change', function(e) {
+                if (e.target.files && e.target.files[0]) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        uploadedImage.src = e.target.result;
+                        uploadedImage.style.display = 'block';
+                        uploadPlaceholder.style.display = 'none';
+                    };
+                    
+                    reader.readAsDataURL(e.target.files[0]);
+                }
+            });
+            
+            // تحديث قيم السلايدر
+            fontSize.addEventListener('input', function() {
+                fontSizeValue.textContent = this.value;
+                if (currentElement) {
+                    currentElement.style.fontSize = this.value + 'px';
+                }
+            });
+            
+            positionX.addEventListener('input', function() {
+                positionXValue.textContent = this.value;
+                if (currentElement) {
+                    currentElement.style.left = this.value + '%';
+                }
+            });
+            
+            positionY.addEventListener('input', function() {
+                positionYValue.textContent = this.value;
+                if (currentElement) {
+                    currentElement.style.top = this.value + '%';
+                }
+            });
+            
+            fontColor.addEventListener('input', function() {
+                if (currentElement) {
+                    currentElement.style.color = this.value;
+                }
+            });
+            
+            // إضافة رقم جديد
+            addNumberBtn.addEventListener('click', function() {
+                if (uploadedImage.style.display !== 'block') {
+                    alert('يرجى تحميل صورة أولاً');
+                    return;
+                }
+                
+                // إزالة العنصر السابق إذا كان موجوداً
+                if (currentElement) {
+                    currentElement.remove();
+                }
+                
+                // إنشاء عنصر الرقم الجديد
+                const numberElement = document.createElement('div');
+                numberElement.className = 'number-preview';
+                numberElement.textContent = convertToArabicNumerals(currentNumber);
+                numberElement.style.fontFamily = "'Lateef', cursive";
+                numberElement.style.fontSize = fontSize.value + 'px';
+                numberElement.style.color = fontColor.value;
+                numberElement.style.position = 'absolute';
+                numberElement.style.left = positionX.value + '%';
+                numberElement.style.top = positionY.value + '%';
+                numberElement.style.transform = 'translate(-50%, -50%)';
+                
+                // جعل العنصر قابلاً للسحب
+                makeElementDraggable(numberElement);
+                
+                // إضافة العنصر إلى حاوية الصورة
+                document.querySelector('.image-container').appendChild(numberElement);
+                currentElement = numberElement;
+                
+                // زيادة الرقم الحالي للاستعداد للرقم التالي
+                currentNumber++;
+                if (currentNumber > parseInt(endNumber.value)) {
+                    currentNumber = parseInt(startNumber.value);
+                }
+            });
+            
+            // جعل العنصر قابلاً للسحب
+            function makeElementDraggable(element) {
+                let isDragging = false;
+                let startX, startY, initialX, initialY;
+                
+                element.addEventListener('mousedown', function(e) {
+                    isDragging = true;
+                    element.style.cursor = 'grabbing';
+                    startX = e.clientX;
+                    startY = e.clientY;
+                    initialX = parseInt(getComputedStyle(element).left);
+                    initialY = parseInt(getComputedStyle(element).top);
+                    e.preventDefault();
+                });
+                
+                document.addEventListener('mousemove', function(e) {
+                    if (!isDragging) return;
+                    
+                    const dx = e.clientX - startX;
+                    const dy = e.clientY - startY;
+                    
+                    // حساب الموضع الجديد بالنسبة المئوية
+                    const container = document.querySelector('.image-container');
+                    const newX = (initialX + dx / container.offsetWidth * 100);
+                    const newY = (initialY + dy / container.offsetHeight * 100);
+                    
+                    // تحديث الموضع
+                    element.style.left = Math.max(0, Math.min(100, newX)) + '%';
+                    element.style.top = Math.max(0, Math.min(100, newY)) + '%';
+                    
+                    // تحديث عناصر التحكم
+                    positionX.value = Math.max(0, Math.min(100, newX));
+                    positionY.value = Math.max(0, Math.min(100, newY));
+                    positionXValue.textContent = Math.round(positionX.value);
+                    positionYValue.textContent = Math.round(positionY.value);
+                });
+                
+                document.addEventListener('mouseup', function() {
+                    isDragging = false;
+                    element.style.cursor = 'grab';
+                });
             }
-            drawImageNumber();
-
-            // سحب الرقم داخل النسخة
-            let selected=false, startX=0, startY=0;
-            canvas.addEventListener('mousedown', e=>{
-                const rect = canvas.getBoundingClientRect();
-                const mx = e.clientX - rect.left;
-                const my = e.clientY - rect.top;
-                const width = ctx.measureText(toArabicNumber(number)).width;
-                const height = fontSize;
-                if(mx>=offsetX && mx<=offsetX+width && my>=offsetY && my<=offsetY+height){
-                    selected=true;
-                    startX = mx - offsetX;
-                    startY = my - offsetY;
+            
+            // فتح نافذة الطباعة
+            printBtn.addEventListener('click', function() {
+                if (!currentElement) {
+                    alert('يرجى إضافة رقم أولاً');
+                    return;
                 }
+                
+                finalNumber.value = endNumber.value;
+                printModal.style.display = 'flex';
             });
-            canvas.addEventListener('mousemove', e=>{
-                if(selected){
-                    const rect = canvas.getBoundingClientRect();
-                    offsetX = e.clientX - rect.left - startX;
-                    offsetY = e.clientY - rect.top - startY;
-                    drawImageNumber();
+            
+            // تأكيد الطباعة
+            confirmPrint.addEventListener('click', function() {
+                alert('سيتم إنشاء ' + finalNumber.value + ' صورة بأرقام متسلسلة. هذه الميزة تتصل عادةً بخادم لمعالجة الصور.');
+                printModal.style.display = 'none';
+            });
+            
+            // إلغاء الطباعة
+            cancelPrint.addEventListener('click', function() {
+                printModal.style.display = 'none';
+            });
+            
+            // حفظ الصورة
+            saveBtn.addEventListener('click', function() {
+                if (!currentElement) {
+                    alert('يرجى إضافة رقم أولاً');
+                    return;
                 }
+                
+                alert('سيتم حفظ الصورة مع الرقم المضاف. هذه الميزة تتصل عادةً بخادم لمعالجة الصور.');
             });
-            canvas.addEventListener('mouseup', ()=> selected=false);
-            canvas.addEventListener('mouseout', ()=> selected=false);
-
-            let wrapper = document.createElement('div');
-            wrapper.style.display='inline-block';
-            wrapper.style.marginRight = hSpace+'px';
-            wrapper.style.marginBottom = vSpace+'px';
-            wrapper.appendChild(canvas);
-            previewDiv.appendChild(wrapper);
-
-            number++;
-        }
-    }
-});
-
-// الطباعة
-document.getElementById('printButton').addEventListener('click', ()=>{
-    const previewDiv = document.getElementById('preview');
-    let printWindow = window.open('', '', 'width=800,height=600');
-    printWindow.document.write('<html><head><title>الطباعة</title></head><body style="display:flex;flex-wrap:wrap;justify-content:flex-start;margin:0;">');
-    Array.from(previewDiv.querySelectorAll('canvas')).forEach(c=>{
-        printWindow.document.write(`<img src="${c.toDataURL()}" style="margin-right:10px;margin-bottom:10px;">`);
-    });
-    printWindow.document.write('</body></html>');
-    printWindow.document.close();
-    printWindow.focus();
-    printWindow.print();
-});
-</script>
-
-<div id="preview"></div>
-
+            
+            // تحويل الأرقام إلى العربية
+            function convertToArabicNumerals(num) {
+                const arabicNumerals = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+                return num.toString().split('').map(digit => arabicNumerals[parseInt(digit)]).join('');
+            }
+        });
+    </script>
 </body>
 </html>
