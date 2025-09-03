@@ -3,14 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>شبكة الصور بالأرقام المتسلسلة</title>
+<title>شبكة22 الصور بالأرقام المتسلسلة</title>
 <style>
 body { font-family: 'Tahoma', sans-serif; display: flex; flex-direction: column; align-items: center; margin: 20px; }
 .controls { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 10px; }
 input, select, button, label { padding: 5px; font-size: 16px; }
-#preview { margin-top: 20px; width:210mm; height:297mm; border:1px solid #000; position: relative; background:#fff; overflow:hidden; }
+#preview { margin-top: 20px; width:210mm; height:297mm; border:1px solid #000; position: relative; background:#fff; overflow:hidden; display:flex; flex-wrap:wrap; justify-content:flex-start; align-content:flex-start; }
 #preview canvas { display:block; cursor: grab; }
-.slider-group { display:flex; flex-direction:column; align-items:center; margin-top:5px; }
 </style>
 </head>
 <body>
@@ -31,21 +30,9 @@ input, select, button, label { padding: 5px; font-size: 16px; }
     <option value="Tahoma">Tahoma</option>
   </select>
   <input type="number" id="fontSize" placeholder="حجم الرقم" value="40">
-  <button id="previewButton">عرض المعاينة</button>
+  <button id="addNumberButton">إضافة الرقم و عرض الشبكة</button>
   <button id="printButton">طباعة</button>
 </div>
-
-<div class="slider-group">
-  <label>تحريك الرقم أفقيًا لجميع النسخ</label>
-  <input type="range" id="sliderX" min="-200" max="200" value="0">
-</div>
-<div class="slider-group">
-  <label>تحريك الرقم عموديًا لجميع النسخ</label>
-  <input type="range" id="sliderY" min="-200" max="200" value="0">
-</div>
-
-<canvas id="canvas" width="800" height="600" style="display:none;"></canvas>
-<div id="preview"></div>
 
 <script>
 // تحويل الرقم للعربية
@@ -54,109 +41,90 @@ function toArabicNumber(num){
     return num.toString().split('').map(d => arabicNums[d]||d).join('');
 }
 
-let canvas = document.getElementById('canvas');
-let ctx = canvas.getContext('2d');
 let img = new Image();
+let offsetX = 0, offsetY = 0;
 
-let offsetAllX = 0;
-let offsetAllY = 0;
-
-document.getElementById('sliderX').addEventListener('input', e => { offsetAllX = parseInt(e.target.value); updatePreview(); });
-document.getElementById('sliderY').addEventListener('input', e => { offsetAllY = parseInt(e.target.value); updatePreview(); });
-
+// تحميل الصورة
 document.getElementById('imageInput').addEventListener('change', e => {
     const file = e.target.files[0];
     if(file){
         const reader = new FileReader();
-        reader.onload = event => { img.src = event.target.result; img.onload = () => updatePreview(); }
+        reader.onload = event => { img.src = event.target.result; }
         reader.readAsDataURL(file);
     }
 });
 
-document.getElementById('colorInput').addEventListener('input', updatePreview);
-document.getElementById('fontSelect').addEventListener('change', updatePreview);
-document.getElementById('fontSize').addEventListener('input', updatePreview);
-document.getElementById('columns').addEventListener('input', updatePreview);
-document.getElementById('rows').addEventListener('input', updatePreview);
-document.getElementById('hSpacing').addEventListener('input', updatePreview);
-document.getElementById('vSpacing').addEventListener('input', updatePreview);
-document.getElementById('startNumber').addEventListener('input', updatePreview);
-document.getElementById('previewButton').addEventListener('click', updatePreview);
-
-function updatePreview(){
+document.getElementById('addNumberButton').addEventListener('click', ()=>{
     const startNum = parseInt(document.getElementById('startNumber').value);
     const cols = parseInt(document.getElementById('columns').value);
     const rows = parseInt(document.getElementById('rows').value);
     const hSpace = parseInt(document.getElementById('hSpacing').value);
     const vSpace = parseInt(document.getElementById('vSpacing').value);
-    const font = document.getElementById('fontSelect').value;
     const color = document.getElementById('colorInput').value;
+    const font = document.getElementById('fontSelect').value;
     const fontSize = parseInt(document.getElementById('fontSize').value);
 
-    if(!img.src) return;
+    if(!img.src) return alert("اختر صورة أولاً");
 
     const previewDiv = document.getElementById('preview');
     previewDiv.innerHTML = '';
-
     let number = startNum;
 
     for(let r=0;r<rows;r++){
         for(let c=0;c<cols;c++){
-            let tempCanvas = document.createElement('canvas');
-            tempCanvas.width = img.width;
-            tempCanvas.height = img.height;
-            let tempCtx = tempCanvas.getContext('2d');
+            let canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            let ctx = canvas.getContext('2d');
 
             function drawImageNumber(){
-                tempCtx.clearRect(0,0,tempCanvas.width,tempCanvas.height);
-                tempCtx.drawImage(img,0,0,img.width,img.height);
-                tempCtx.fillStyle = color;
-                tempCtx.font = `${fontSize}px ${font}`;
-                tempCtx.fillText(toArabicNumber(number), offsetAllX, offsetAllY + fontSize);
+                ctx.clearRect(0,0,canvas.width,canvas.height);
+                ctx.drawImage(img,0,0,img.width,img.height);
+                ctx.fillStyle = color;
+                ctx.font = `${fontSize}px ${font}`;
+                ctx.fillText(toArabicNumber(number), offsetX, offsetY + fontSize);
             }
             drawImageNumber();
 
-            // سحب الرقم داخل كل نسخة
-            let selected=false, offsetX=0, offsetY=0;
-            tempCanvas.addEventListener('mousedown', e=>{
-                const rect = tempCanvas.getBoundingClientRect();
+            // سحب الرقم داخل النسخة
+            let selected=false, startX=0, startY=0;
+            canvas.addEventListener('mousedown', e=>{
+                const rect = canvas.getBoundingClientRect();
                 const mx = e.clientX - rect.left;
                 const my = e.clientY - rect.top;
-                const width = tempCtx.measureText(toArabicNumber(number)).width;
+                const width = ctx.measureText(toArabicNumber(number)).width;
                 const height = fontSize;
-                if(mx>=offsetAllX && mx<=offsetAllX+width && my>=offsetAllY && my<=offsetAllY+height){
+                if(mx>=offsetX && mx<=offsetX+width && my>=offsetY && my<=offsetY+height){
                     selected=true;
-                    offsetX = mx - offsetAllX;
-                    offsetY = my - offsetAllY;
+                    startX = mx - offsetX;
+                    startY = my - offsetY;
                 }
             });
-            tempCanvas.addEventListener('mousemove', e=>{
+            canvas.addEventListener('mousemove', e=>{
                 if(selected){
-                    const rect = tempCanvas.getBoundingClientRect();
-                    const mx = e.clientX - rect.left;
-                    const my = e.clientY - rect.top;
-                    offsetAllX = mx - offsetX;
-                    offsetAllY = my - offsetY;
+                    const rect = canvas.getBoundingClientRect();
+                    offsetX = e.clientX - rect.left - startX;
+                    offsetY = e.clientY - rect.top - startY;
                     drawImageNumber();
                 }
             });
-            tempCanvas.addEventListener('mouseup', ()=> selected=false);
-            tempCanvas.addEventListener('mouseout', ()=> selected=false);
+            canvas.addEventListener('mouseup', ()=> selected=false);
+            canvas.addEventListener('mouseout', ()=> selected=false);
 
             let wrapper = document.createElement('div');
             wrapper.style.display='inline-block';
             wrapper.style.marginRight = hSpace+'px';
             wrapper.style.marginBottom = vSpace+'px';
-            wrapper.appendChild(tempCanvas);
+            wrapper.appendChild(canvas);
             previewDiv.appendChild(wrapper);
 
             number++;
         }
     }
-}
+});
 
 // الطباعة
-document.getElementById('printButton').addEventListener('click', () => {
+document.getElementById('printButton').addEventListener('click', ()=>{
     const previewDiv = document.getElementById('preview');
     let printWindow = window.open('', '', 'width=800,height=600');
     printWindow.document.write('<html><head><title>الطباعة</title></head><body style="display:flex;flex-wrap:wrap;justify-content:flex-start;margin:0;">');
@@ -169,6 +137,8 @@ document.getElementById('printButton').addEventListener('click', () => {
     printWindow.print();
 });
 </script>
+
+<div id="preview"></div>
 
 </body>
 </html>
