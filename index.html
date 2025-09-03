@@ -94,11 +94,20 @@
             background: #f8f9fa;
             padding: 20px;
             border-radius: 8px;
+            max-height: 842px;
+            overflow-y: auto;
         }
         
         .customization-panel h2 {
             margin-bottom: 20px;
             color: #34495e;
+        }
+        
+        .customization-panel h3 {
+            margin: 20px 0 15px;
+            color: #2c3e50;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #ddd;
         }
         
         .form-group {
@@ -116,6 +125,26 @@
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 5px;
+        }
+        
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 5px;
+        }
+        
+        .slider-container input[type="range"] {
+            flex: 1;
+        }
+        
+        .slider-value {
+            min-width: 50px;
+            text-align: center;
+            background: #eee;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: bold;
         }
         
         .color-picker {
@@ -180,6 +209,7 @@
             max-width: 100%;
             max-height: 100%;
             object-fit: contain;
+            transition: all 0.3s ease;
         }
         
         .number-overlay {
@@ -190,6 +220,7 @@
             font-weight: bold;
             z-index: 10;
             pointer-events: none;
+            transition: all 0.3s ease;
         }
         
         .action-buttons {
@@ -286,6 +317,7 @@
             
             <section class="customization-panel">
                 <h2>تخصيص الأرقام</h2>
+                
                 <div class="form-group">
                     <label for="numberInput">أدخل الرقم:</label>
                     <input type="text" id="numberInput" placeholder="أدخل الرقم هنا">
@@ -299,18 +331,25 @@
                     </div>
                 </div>
                 
+                <h3>موضع الرقم</h3>
+                
                 <div class="form-group">
-                    <label for="numberPosition">موضع الرقم:</label>
-                    <select id="numberPosition">
-                        <option value="top-left">أعلى اليسار</option>
-                        <option value="top-right">أعلى اليمين</option>
-                        <option value="bottom-left">أسفل اليسار</option>
-                        <option value="bottom-right" selected>أسفل اليمين</option>
-                        <option value="center">الوسط</option>
-                    </select>
+                    <label>الموضع الأفقي:</label>
+                    <div class="slider-container">
+                        <input type="range" id="positionX" min="0" max="100" value="90">
+                        <span class="slider-value" id="positionXValue">90%</span>
+                    </div>
                 </div>
                 
-                <h3 style="margin-top: 20px;">تكوين الشبكة</h3>
+                <div class="form-group">
+                    <label>الموضع العمودي:</label>
+                    <div class="slider-container">
+                        <input type="range" id="positionY" min="0" max="100" value="90">
+                        <span class="slider-value" id="positionYValue">90%</span>
+                    </div>
+                </div>
+                
+                <h3>تكوين الشبكة</h3>
                 <div class="grid-config">
                     <div class="form-group">
                         <label for="columns">عدد الأعمدة:</label>
@@ -320,6 +359,24 @@
                     <div class="form-group">
                         <label for="rows">عدد الصفوف:</label>
                         <input type="number" id="rows" min="1" max="10" value="2">
+                    </div>
+                </div>
+                
+                <h3>حجم الصورة داخل الخلية</h3>
+                
+                <div class="form-group">
+                    <label>عرض الصورة:</label>
+                    <div class="slider-container">
+                        <input type="range" id="imageWidth" min="10" max="100" value="100">
+                        <span class="slider-value" id="imageWidthValue">100%</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>ارتفاع الصورة:</label>
+                    <div class="slider-container">
+                        <input type="range" id="imageHeight" min="10" max="100" value="100">
+                        <span class="slider-value" id="imageHeightValue">100%</span>
                     </div>
                 </div>
             </section>
@@ -348,7 +405,14 @@
             const numberInput = document.getElementById('numberInput');
             const numberColor = document.getElementById('numberColor');
             const colorValue = document.getElementById('colorValue');
-            const numberPosition = document.getElementById('numberPosition');
+            const positionX = document.getElementById('positionX');
+            const positionXValue = document.getElementById('positionXValue');
+            const positionY = document.getElementById('positionY');
+            const positionYValue = document.getElementById('positionYValue');
+            const imageWidth = document.getElementById('imageWidth');
+            const imageWidthValue = document.getElementById('imageWidthValue');
+            const imageHeight = document.getElementById('imageHeight');
+            const imageHeightValue = document.getElementById('imageHeightValue');
             const columnsInput = document.getElementById('columns');
             const rowsInput = document.getElementById('rows');
             const gridContainer = document.getElementById('gridContainer');
@@ -402,49 +466,34 @@
                 // إذا كانت هناك صورة محملة، أضفها إلى الخلايا
                 if (currentImage) {
                     addImageToCells();
+                    updateImageSize();
                 }
             }
             
             // تحديث موضع الرقم على الصورة
             function updateNumberPosition(element) {
-                const position = numberPosition.value;
-                const padding = 20;
+                const xPos = positionX.value;
+                const yPos = positionY.value;
                 
-                element.style.transform = '';
+                element.style.left = `${xPos}%`;
+                element.style.top = `${yPos}%`;
+                element.style.transform = 'translate(-50%, -50%)';
+                element.style.right = 'auto';
+                element.style.bottom = 'auto';
+            }
+            
+            // تحديث حجم الصورة داخل الخلايا
+            function updateImageSize() {
+                const width = imageWidth.value;
+                const height = imageHeight.value;
                 
-                switch(position) {
-                    case 'top-left':
-                        element.style.top = padding + 'px';
-                        element.style.left = padding + 'px';
-                        element.style.right = 'auto';
-                        element.style.bottom = 'auto';
-                        break;
-                    case 'top-right':
-                        element.style.top = padding + 'px';
-                        element.style.right = padding + 'px';
-                        element.style.left = 'auto';
-                        element.style.bottom = 'auto';
-                        break;
-                    case 'bottom-left':
-                        element.style.bottom = padding + 'px';
-                        element.style.left = padding + 'px';
-                        element.style.right = 'auto';
-                        element.style.top = 'auto';
-                        break;
-                    case 'bottom-right':
-                        element.style.bottom = padding + 'px';
-                        element.style.right = padding + 'px';
-                        element.style.left = 'auto';
-                        element.style.top = 'auto';
-                        break;
-                    case 'center':
-                        element.style.top = '50%';
-                        element.style.left = '50%';
-                        element.style.right = 'auto';
-                        element.style.bottom = 'auto';
-                        element.style.transform = 'translate(-50%, -50%)';
-                        break;
-                }
+                currentCells.forEach(cell => {
+                    const img = cell.element.querySelector('img');
+                    if (img) {
+                        img.style.width = `${width}%`;
+                        img.style.height = `${height}%`;
+                    }
+                });
             }
             
             // تحديث جميع الأرقام في الخلايا
@@ -468,6 +517,7 @@
                 reader.onload = function(e) {
                     currentImage = e.target.result;
                     addImageToCells();
+                    updateImageSize();
                 };
                 reader.readAsDataURL(file);
             }
@@ -488,6 +538,14 @@
                 });
             }
             
+            // تحديث قيم السلايدرات
+            function updateSliderValues() {
+                positionXValue.textContent = `${positionX.value}%`;
+                positionYValue.textContent = `${positionY.value}%`;
+                imageWidthValue.textContent = `${imageWidth.value}%`;
+                imageHeightValue.textContent = `${imageHeight.value}%`;
+            }
+            
             // إعداد event listeners
             uploadTrigger.addEventListener('click', function() {
                 imageUpload.click();
@@ -502,10 +560,28 @@
                 updateAllNumbers();
             });
             
-            numberPosition.addEventListener('change', function() {
+            positionX.addEventListener('input', function() {
+                updateSliderValues();
                 currentCells.forEach(cell => {
                     updateNumberPosition(cell.numberElement);
                 });
+            });
+            
+            positionY.addEventListener('input', function() {
+                updateSliderValues();
+                currentCells.forEach(cell => {
+                    updateNumberPosition(cell.numberElement);
+                });
+            });
+            
+            imageWidth.addEventListener('input', function() {
+                updateSliderValues();
+                updateImageSize();
+            });
+            
+            imageHeight.addEventListener('input', function() {
+                updateSliderValues();
+                updateImageSize();
             });
             
             columnsInput.addEventListener('input', createGrid);
@@ -521,9 +597,14 @@
                 numberInput.value = '';
                 numberColor.value = '#e74c3c';
                 colorValue.textContent = '#e74c3c';
-                numberPosition.value = 'bottom-right';
+                positionX.value = 90;
+                positionY.value = 90;
+                imageWidth.value = 100;
+                imageHeight.value = 100;
                 columnsInput.value = 2;
                 rowsInput.value = 2;
+                
+                updateSliderValues();
                 
                 // إزالة الصور من الخلايا
                 currentCells.forEach(cell => {
@@ -558,6 +639,7 @@
             });
             
             // التهيئة الأولية
+            updateSliderValues();
             createGrid();
         });
     </script>
