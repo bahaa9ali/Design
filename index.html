@@ -3,24 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>تعديل الصور بالأرقام العربية</title>
+<title>تعديل الصور بالأرقام والعُملة</title>
 <style>
   body { font-family: 'Tahoma', sans-serif; display: flex; flex-direction: column; align-items: center; margin: 20px; }
-  #canvas { display:none; } /* لا حاجة للعرض الأساسي */
+  #canvas { display:none; } 
   .controls { margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap; }
-  input, select, button { padding: 5px; font-size: 16px; }
+  input, select, button, label { padding: 5px; font-size: 16px; }
   #preview { margin-top: 20px; display: grid; gap: 10px; grid-template-columns: repeat(3, 1fr); }
-  #preview img { border: 1px solid #aaa; width: 100%; cursor: grab; }
+  #preview canvas { border: 1px solid #aaa; width: 100%; cursor: grab; }
+  .slider-group { display:flex; flex-direction:column; align-items:center; margin-top:5px; }
 </style>
 </head>
 <body>
 
-<h2>تعديل الصور بالأرقام العربية مع معاينة A4</h2>
+<h2>تعديل الصور بالأرقام العربية مع عملة ومعاينة A4</h2>
 
 <div class="controls">
   <input type="file" id="imageInput" accept="image/*">
   <input type="number" id="startNumber" placeholder="الرقم الأول" min="1" value="1">
   <input type="number" id="endNumber" placeholder="الرقم الأخير" min="1" value="10">
+  <input type="text" id="currencyLabel" placeholder="نوع العملة" value="د.ع">
   <input type="color" id="colorInput" value="#ff0000">
   <select id="fontSelect">
     <option value="Meri">Meri</option>
@@ -31,6 +33,19 @@
   <button id="addNumber">أضف الرقم</button>
   <button id="previewButton">عرض المعاينة</button>
   <button id="printButton">طباعة</button>
+</div>
+
+<div class="slider-group">
+  <label>تحريك الرقم أفقيًا</label>
+  <input type="range" id="sliderX" min="-400" max="400" value="0">
+</div>
+<div class="slider-group">
+  <label>تحريك الرقم عموديًا</label>
+  <input type="range" id="sliderY" min="-300" max="300" value="0">
+</div>
+<div class="slider-group">
+  <label>هامش الصورة (Padding)</label>
+  <input type="range" id="paddingSlider" min="0" max="50" value="0">
 </div>
 
 <canvas id="canvas" width="800" height="600"></canvas>
@@ -48,6 +63,23 @@ let ctx = canvas.getContext('2d');
 let img = new Image();
 let numbers = [];
 
+let offsetAllX = 0;
+let offsetAllY = 0;
+let padding = 0;
+
+document.getElementById('sliderX').addEventListener('input', e=>{
+    offsetAllX = parseInt(e.target.value);
+    updatePreview();
+});
+document.getElementById('sliderY').addEventListener('input', e=>{
+    offsetAllY = parseInt(e.target.value);
+    updatePreview();
+});
+document.getElementById('paddingSlider').addEventListener('input', e=>{
+    padding = parseInt(e.target.value);
+    updatePreview();
+});
+
 // تحميل الصورة
 document.getElementById('imageInput').addEventListener('change', e => {
     const file = e.target.files[0];
@@ -60,7 +92,7 @@ document.getElementById('imageInput').addEventListener('change', e => {
     }
 });
 
-// إضافة الرقم الأساسي (موضع افتراضي)
+// إضافة الرقم الأساسي
 document.getElementById('addNumber').addEventListener('click', () => {
     const color = document.getElementById('colorInput').value;
     const font = document.getElementById('fontSelect').value;
@@ -71,12 +103,18 @@ document.getElementById('addNumber').addEventListener('click', () => {
 
 // عرض المعاينة
 document.getElementById('previewButton').addEventListener('click', () => {
+    updatePreview();
+});
+
+function updatePreview(){
     const start = parseInt(document.getElementById('startNumber').value);
     const end = parseInt(document.getElementById('endNumber').value);
     if(isNaN(start) || isNaN(end) || start > end) return alert("أدخل أرقام صحيحة");
 
     const previewDiv = document.getElementById('preview');
     previewDiv.innerHTML = '';
+
+    const currency = document.getElementById('currencyLabel').value;
 
     for(let i=start;i<=end;i++){
         let tempCanvas = document.createElement('canvas');
@@ -89,12 +127,16 @@ document.getElementById('previewButton').addEventListener('click', () => {
 
         function drawPage(){
             tempCtx.clearRect(0,0,tempCanvas.width,tempCanvas.height);
-            tempCtx.drawImage(img,0,0,tempCanvas.width,tempCanvas.height);
+            tempCtx.drawImage(img,padding,padding,tempCanvas.width-2*padding,tempCanvas.height-2*padding);
             pageNumbers.forEach(n=>{
                 tempCtx.fillStyle = n.color;
                 tempCtx.font = `${n.size}px ${n.font}`;
-                tempCtx.fillText(toArabicNumber(i), n.x/800*tempCanvas.width, n.y/600*tempCanvas.height);
+                tempCtx.fillText(toArabicNumber(i), n.x/800*tempCanvas.width + offsetAllX, n.y/600*tempCanvas.height + offsetAllY);
             });
+            // كتابة نوع العملة فوق كل صورة
+            tempCtx.fillStyle = "#000";
+            tempCtx.font = `20px Arial`;
+            tempCtx.fillText(currency, 5, 20);
         }
 
         drawPage();
@@ -110,8 +152,8 @@ document.getElementById('previewButton').addEventListener('click', () => {
                 let n = pageNumbers[j];
                 let width = tempCtx.measureText('0').width;
                 let height = n.size;
-                let nx = n.x/800*tempCanvas.width;
-                let ny = n.y/600*tempCanvas.height;
+                let nx = n.x/800*tempCanvas.width + offsetAllX;
+                let ny = n.y/600*tempCanvas.height + offsetAllY;
                 if(mx>=nx && mx<=nx+width && my<=ny && my>=ny-height){
                     selected = n;
                     offsetX = mx - nx;
@@ -125,20 +167,17 @@ document.getElementById('previewButton').addEventListener('click', () => {
                 const rect = tempCanvas.getBoundingClientRect();
                 let mx = e.clientX - rect.left;
                 let my = e.clientY - rect.top;
-                selected.x = (mx - offsetX)/(tempCanvas.width/800);
-                selected.y = (my - offsetY)/(tempCanvas.height/600);
+                selected.x = (mx - offsetX - offsetAllX)/(tempCanvas.width/800);
+                selected.y = (my - offsetY - offsetAllY)/(tempCanvas.height/600);
                 drawPage();
             }
         });
         tempCanvas.addEventListener('mouseup', ()=> selected=null);
         tempCanvas.addEventListener('mouseout', ()=> selected=null);
 
-        // بعد الرسم، نستخدم الصورة النهائية في الطباعة
-        tempCanvas.dataset.number = i;
-
         previewDiv.appendChild(tempCanvas);
     }
-});
+}
 
 // طباعة المعاينة
 document.getElementById('printButton').addEventListener('click', () => {
