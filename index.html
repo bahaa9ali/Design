@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تطبيق إضافة الأرقام العربية على الصور</title>
+    <title>تطبيق إنشاء شبكة الصور مع الأرقام العربية</title>
     <link href="https://fonts.googleapis.com/css2?family=Lateef&display=swap" rel="stylesheet">
     <style>
         * {
@@ -14,19 +14,20 @@
         }
         
         body {
-            background-color: #f5f7fa;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
             color: #333;
             line-height: 1.6;
             padding: 20px;
+            min-height: 100vh;
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            padding: 25px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 30px;
             overflow: hidden;
         }
         
@@ -34,18 +35,19 @@
             text-align: center;
             margin-bottom: 30px;
             padding-bottom: 20px;
-            border-bottom: 1px solid #eee;
+            border-bottom: 2px solid #eee;
         }
         
         h1 {
             font-family: 'Lateef', cursive;
-            font-size: 42px;
+            font-size: 48px;
             color: #2c3e50;
             margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
         }
         
         .app-description {
-            font-size: 18px;
+            font-size: 20px;
             color: #7f8c8d;
             max-width: 800px;
             margin: 0 auto;
@@ -54,218 +56,272 @@
         .app-content {
             display: flex;
             flex-wrap: wrap;
-            gap: 20px;
+            gap: 25px;
         }
         
-        .upload-section {
+        .control-panel {
             flex: 1;
-            min-width: 300px;
+            min-width: 320px;
             background: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-            border: 2px dashed #ccc;
-            text-align: center;
-        }
-        
-        .upload-section h2 {
-            margin-bottom: 15px;
-            color: #34495e;
-        }
-        
-        .upload-btn {
-            background: #3498db;
-            color: white;
-            padding: 12px 25px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            margin: 15px 0;
-            transition: background 0.3s;
-        }
-        
-        .upload-btn:hover {
-            background: #2980b9;
-        }
-        
-        .customization-panel {
-            flex: 1;
-            min-width: 300px;
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             max-height: 842px;
             overflow-y: auto;
         }
         
-        .customization-panel h2 {
+        .control-panel h2 {
             margin-bottom: 20px;
             color: #34495e;
+            text-align: center;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3498db;
         }
         
-        .customization-panel h3 {
-            margin: 20px 0 15px;
+        .control-panel h3 {
+            margin: 25px 0 15px;
             color: #2c3e50;
-            padding-bottom: 5px;
+            padding-bottom: 8px;
             border-bottom: 1px solid #ddd;
         }
         
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
         }
         
         .form-group label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             font-weight: 600;
+            color: #2c3e50;
         }
         
         .form-group input, .form-group select {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             border: 1px solid #ddd;
-            border-radius: 5px;
+            border-radius: 6px;
+            font-size: 16px;
         }
         
         .slider-container {
             display: flex;
             align-items: center;
-            gap: 10px;
-            margin-top: 5px;
+            gap: 12px;
+            margin-top: 8px;
         }
         
         .slider-container input[type="range"] {
             flex: 1;
+            height: 8px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #ddd;
+            border-radius: 5px;
+            outline: none;
+        }
+        
+        .slider-container input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #3498db;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .slider-container input[type="range"]::-webkit-slider-thumb:hover {
+            background: #2980b9;
         }
         
         .slider-value {
-            min-width: 50px;
+            min-width: 60px;
             text-align: center;
-            background: #eee;
-            padding: 2px 5px;
-            border-radius: 3px;
+            background: #3498db;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
             font-weight: bold;
         }
         
         .color-picker {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
         
         .color-picker input {
             flex: 1;
+            height: 40px;
         }
         
         .grid-config {
             display: flex;
-            gap: 10px;
+            gap: 12px;
         }
         
         .grid-config .form-group {
             flex: 1;
         }
         
+        .upload-section {
+            background: #e8f4fc;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .upload-btn {
+            background: #3498db;
+            color: white;
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            margin: 15px 0;
+            transition: background 0.3s;
+            display: inline-block;
+            width: 100%;
+        }
+        
+        .upload-btn:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
         .preview-section {
-            flex: 100%;
-            margin-top: 20px;
+            flex: 2;
+            min-width: 500px;
+            margin-top: 0;
             text-align: center;
         }
         
         .preview-section h2 {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             color: #34495e;
+            text-align: center;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3498db;
         }
         
         .a4-preview-container {
             position: relative;
-            width: 595px; /* عرض A4 بالبكسل للشاشة 72DPI */
-            height: 842px; /* ارتفاع A4 بالبكسل للشاشة 72DPI */
+            width: 595px;
+            height: 842px;
             margin: 0 auto;
             background: white;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
             padding: 40px;
             overflow: hidden;
+            border: 1px solid #ccc;
         }
         
         .a4-content {
             width: 100%;
             height: 100%;
             display: grid;
-            gap: 10px;
+            gap: 15px;
             position: relative;
         }
         
         .grid-cell {
             position: relative;
-            border: 1px dashed #ddd;
+            border: 2px dashed #ddd;
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
+            background: #f9f9f9;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .grid-cell:hover {
+            border-color: #3498db;
+            transform: scale(1.02);
         }
         
         .grid-cell img {
             max-width: 100%;
             max-height: 100%;
-            object-fit: contain;
+            object-fit: cover;
             transition: all 0.3s ease;
         }
         
         .number-overlay {
             position: absolute;
             font-family: 'Lateef', cursive;
-            font-size: 230px; /* حجم الرقم 230px كما طلبت */
+            font-size: 180px;
             color: #e74c3c;
             font-weight: bold;
             z-index: 10;
             pointer-events: none;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
             transition: all 0.3s ease;
         }
         
         .action-buttons {
-            margin-top: 20px;
+            margin-top: 30px;
             display: flex;
             justify-content: center;
-            gap: 15px;
+            gap: 20px;
         }
         
         .action-btn {
-            padding: 12px 25px;
+            padding: 15px 35px;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 18px;
             transition: all 0.3s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
         
         .print-btn {
-            background: #27ae60;
+            background: linear-gradient(to right, #27ae60, #2ecc71);
             color: white;
         }
         
         .print-btn:hover {
-            background: #219653;
+            background: linear-gradient(to right, #219653, #27ae60);
         }
         
         .reset-btn {
-            background: #e74c3c;
+            background: linear-gradient(to right, #e74c3c, #e67e22);
             color: white;
         }
         
         .reset-btn:hover {
-            background: #c0392b;
+            background: linear-gradient(to right, #c0392b, #d35400);
         }
         
-        @media (max-width: 768px) {
+        @media (max-width: 1100px) {
             .app-content {
                 flex-direction: column;
+            }
+            
+            .preview-section {
+                width: 100%;
             }
             
             .a4-preview-container {
                 width: 100%;
                 height: auto;
-                aspect-ratio: 1/1.414; /* نسبة A4 */
+                aspect-ratio: 1/1.414;
             }
         }
         
@@ -292,36 +348,74 @@
                 box-shadow: none;
                 padding: 0;
                 margin: 0;
+                border: none;
             }
             
             .number-overlay {
                 color: black !important;
+                text-shadow: none !important;
             }
+        }
+
+        .instructions {
+            background: #fff8e1;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border-right: 4px solid #ffc107;
+        }
+        
+        .instructions h3 {
+            color: #d35400;
+            margin-top: 0;
+        }
+        
+        .instructions ol {
+            padding-right: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>تطبيق إضافة الأرقام العربية على الصور</h1>
-            <p class="app-description">قم بتحميل صورة، أضف الأرقام العربية، وقم بتخصيصها ثم شاهد معاينة للنتيجة كما ستظهر عند الطباعة</p>
+            <h1>تطبيق إنشاء شبكة الصور مع الأرقام العربية</h1>
+            <p class="app-description">قم بتحميل صورة، أنشئ شبكة الصور، أضف الأرقام العربية، وقم بتخصيصها بالكامل ثم اطبع النتيجة</p>
         </header>
         
         <main class="app-content">
-            <section class="upload-section">
-                <h2>تحميل الصورة</h2>
-                <input type="file" id="imageUpload" accept="image/*" class="hidden">
-                <button class="upload-btn" id="uploadTrigger">اختر صورة</button>
-                <p>أو اسحب وأسقط الصورة هنا</p>
-            </section>
-            
-            <section class="customization-panel">
-                <h2>تخصيص الأرقام</h2>
+            <section class="control-panel">
+                <h2>لوحة التحكم</h2>
+                
+                <div class="upload-section">
+                    <input type="file" id="imageUpload" accept="image/*" class="hidden">
+                    <button class="upload-btn" id="uploadTrigger">اختر صورة للشبكة</button>
+                    <p>يمكنك سحب وإسقاط الصورة هنا</p>
+                </div>
+                
+                <h3>إعدادات الشبكة</h3>
+                
+                <div class="grid-config">
+                    <div class="form-group">
+                        <label for="columns">عدد الأعمدة:</label>
+                        <input type="number" id="columns" min="1" max="10" value="3">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="rows">عدد الصفوف:</label>
+                        <input type="number" id="rows" min="1" max="10" value="3">
+                    </div>
+                </div>
                 
                 <div class="form-group">
-                    <label for="numberInput">أدخل الرقم:</label>
-                    <input type="text" id="numberInput" placeholder="أدخل الرقم هنا">
+                    <label for="startNumber">الرقم البدائي:</label>
+                    <input type="number" id="startNumber" min="1" max="100" value="1">
                 </div>
+                
+                <h3>تخصيص الأرقام</h3>
                 
                 <div class="form-group">
                     <label for="numberColor">لون الرقم:</label>
@@ -331,53 +425,58 @@
                     </div>
                 </div>
                 
-                <h3>موضع الرقم</h3>
+                <div class="form-group">
+                    <label>حجم الرقم:</label>
+                    <div class="slider-container">
+                        <input type="range" id="numberSize" min="50" max="300" value="180">
+                        <span class="slider-value" id="numberSizeValue">180px</span>
+                    </div>
+                </div>
                 
                 <div class="form-group">
                     <label>الموضع الأفقي:</label>
                     <div class="slider-container">
-                        <input type="range" id="positionX" min="0" max="100" value="90">
-                        <span class="slider-value" id="positionXValue">90%</span>
+                        <input type="range" id="positionX" min="0" max="100" value="85">
+                        <span class="slider-value" id="positionXValue">85%</span>
                     </div>
                 </div>
                 
                 <div class="form-group">
                     <label>الموضع العمودي:</label>
                     <div class="slider-container">
-                        <input type="range" id="positionY" min="0" max="100" value="90">
-                        <span class="slider-value" id="positionYValue">90%</span>
+                        <input type="range" id="positionY" min="0" max="100" value="85">
+                        <span class="slider-value" id="positionYValue">85%</span>
                     </div>
                 </div>
                 
-                <h3>تكوين الشبكة</h3>
-                <div class="grid-config">
-                    <div class="form-group">
-                        <label for="columns">عدد الأعمدة:</label>
-                        <input type="number" id="columns" min="1" max="10" value="2">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="rows">عدد الصفوف:</label>
-                        <input type="number" id="rows" min="1" max="10" value="2">
-                    </div>
-                </div>
-                
-                <h3>حجم الصورة داخل الخلية</h3>
+                <h3>تخصيص الصور</h3>
                 
                 <div class="form-group">
-                    <label>عرض الصورة:</label>
+                    <label>حجم الصورة داخل الخلية:</label>
                     <div class="slider-container">
-                        <input type="range" id="imageWidth" min="10" max="100" value="100">
-                        <span class="slider-value" id="imageWidthValue">100%</span>
+                        <input type="range" id="imageSize" min="50" max="150" value="100">
+                        <span class="slider-value" id="imageSizeValue">100%</span>
                     </div>
                 </div>
                 
                 <div class="form-group">
-                    <label>ارتفاع الصورة:</label>
-                    <div class="slider-container">
-                        <input type="range" id="imageHeight" min="10" max="100" value="100">
-                        <span class="slider-value" id="imageHeightValue">100%</span>
-                    </div>
+                    <label for="imageStyle">نمط الصورة:</label>
+                    <select id="imageStyle">
+                        <option value="cover">تغطية (Cover)</option>
+                        <option value="contain">احتواء (Contain)</option>
+                        <option value="stretch">تمديد (Stretch)</option>
+                    </select>
+                </div>
+                
+                <div class="instructions">
+                    <h3>كيفية الاستخدام:</h3>
+                    <ol>
+                        <li>اختر صورة لملء الشبكة</li>
+                        <li>حدد عدد الأعمدة والصفوف</li>
+                        <li>اضبط خصائص الأرقام من حيث الحجم واللون والموضع</li>
+                        <li>اضبط حجم الصورة ونمط العرض</li>
+                        <li>اطبع النتيجة عندما تكون راضياً عن المعاينة</li>
+                    </ol>
                 </div>
             </section>
             
@@ -402,17 +501,18 @@
             // العناصر الرئيسية
             const uploadTrigger = document.getElementById('uploadTrigger');
             const imageUpload = document.getElementById('imageUpload');
-            const numberInput = document.getElementById('numberInput');
+            const startNumberInput = document.getElementById('startNumber');
             const numberColor = document.getElementById('numberColor');
             const colorValue = document.getElementById('colorValue');
+            const numberSize = document.getElementById('numberSize');
+            const numberSizeValue = document.getElementById('numberSizeValue');
             const positionX = document.getElementById('positionX');
             const positionXValue = document.getElementById('positionXValue');
             const positionY = document.getElementById('positionY');
             const positionYValue = document.getElementById('positionYValue');
-            const imageWidth = document.getElementById('imageWidth');
-            const imageWidthValue = document.getElementById('imageWidthValue');
-            const imageHeight = document.getElementById('imageHeight');
-            const imageHeightValue = document.getElementById('imageHeightValue');
+            const imageSize = document.getElementById('imageSize');
+            const imageSizeValue = document.getElementById('imageSizeValue');
+            const imageStyle = document.getElementById('imageStyle');
             const columnsInput = document.getElementById('columns');
             const rowsInput = document.getElementById('rows');
             const gridContainer = document.getElementById('gridContainer');
@@ -431,8 +531,9 @@
             
             // إنشاء الشبكة بناءً على عدد الأعمدة والصفوف
             function createGrid() {
-                const columns = parseInt(columnsInput.value) || 2;
-                const rows = parseInt(rowsInput.value) || 2;
+                const columns = parseInt(columnsInput.value) || 3;
+                const rows = parseInt(rowsInput.value) || 3;
+                const startNumber = parseInt(startNumberInput.value) || 1;
                 
                 // مسح المحتوى الحالي
                 gridContainer.innerHTML = '';
@@ -450,8 +551,9 @@
                     const numberOverlay = document.createElement('div');
                     numberOverlay.className = 'number-overlay';
                     numberOverlay.id = `number-${i}`;
-                    numberOverlay.textContent = convertToArabicNumbers(i + 1);
+                    numberOverlay.textContent = convertToArabicNumbers(startNumber + i);
                     numberOverlay.style.color = numberColor.value;
+                    numberOverlay.style.fontSize = numberSize.value + 'px';
                     updateNumberPosition(numberOverlay);
                     
                     cell.appendChild(numberOverlay);
@@ -466,7 +568,7 @@
                 // إذا كانت هناك صورة محملة، أضفها إلى الخلايا
                 if (currentImage) {
                     addImageToCells();
-                    updateImageSize();
+                    updateImageProperties();
                 }
             }
             
@@ -482,28 +584,30 @@
                 element.style.bottom = 'auto';
             }
             
-            // تحديث حجم الصورة داخل الخلايا
-            function updateImageSize() {
-                const width = imageWidth.value;
-                const height = imageHeight.value;
+            // تحديث خصائص الصورة داخل الخلايا
+            function updateImageProperties() {
+                const size = imageSize.value;
+                const style = imageStyle.value;
                 
                 currentCells.forEach(cell => {
                     const img = cell.element.querySelector('img');
                     if (img) {
-                        img.style.width = `${width}%`;
-                        img.style.height = `${height}%`;
+                        img.style.width = `${size}%`;
+                        img.style.height = `${size}%`;
+                        img.style.objectFit = style;
                     }
                 });
             }
             
             // تحديث جميع الأرقام في الخلايا
             function updateAllNumbers() {
-                const startNumber = parseInt(numberInput.value) || 1;
+                const startNumber = parseInt(startNumberInput.value) || 1;
                 
                 currentCells.forEach((cell, index) => {
                     const arabicNumber = convertToArabicNumbers(startNumber + index);
                     cell.numberElement.textContent = arabicNumber;
                     cell.numberElement.style.color = numberColor.value;
+                    cell.numberElement.style.fontSize = numberSize.value + 'px';
                     updateNumberPosition(cell.numberElement);
                 });
             }
@@ -517,7 +621,7 @@
                 reader.onload = function(e) {
                     currentImage = e.target.result;
                     addImageToCells();
-                    updateImageSize();
+                    updateImageProperties();
                 };
                 reader.readAsDataURL(file);
             }
@@ -540,10 +644,10 @@
             
             // تحديث قيم السلايدرات
             function updateSliderValues() {
+                numberSizeValue.textContent = `${numberSize.value}px`;
                 positionXValue.textContent = `${positionX.value}%`;
                 positionYValue.textContent = `${positionY.value}%`;
-                imageWidthValue.textContent = `${imageWidth.value}%`;
-                imageHeightValue.textContent = `${imageHeight.value}%`;
+                imageSizeValue.textContent = `${imageSize.value}%`;
             }
             
             // إعداد event listeners
@@ -553,10 +657,15 @@
             
             imageUpload.addEventListener('change', loadImage);
             
-            numberInput.addEventListener('input', updateAllNumbers);
+            startNumberInput.addEventListener('input', updateAllNumbers);
             
             numberColor.addEventListener('input', function() {
                 colorValue.textContent = this.value;
+                updateAllNumbers();
+            });
+            
+            numberSize.addEventListener('input', function() {
+                updateSliderValues();
                 updateAllNumbers();
             });
             
@@ -574,15 +683,12 @@
                 });
             });
             
-            imageWidth.addEventListener('input', function() {
+            imageSize.addEventListener('input', function() {
                 updateSliderValues();
-                updateImageSize();
+                updateImageProperties();
             });
             
-            imageHeight.addEventListener('input', function() {
-                updateSliderValues();
-                updateImageSize();
-            });
+            imageStyle.addEventListener('change', updateImageProperties);
             
             columnsInput.addEventListener('input', createGrid);
             rowsInput.addEventListener('input', createGrid);
@@ -594,15 +700,16 @@
             resetBtn.addEventListener('click', function() {
                 imageUpload.value = '';
                 currentImage = null;
-                numberInput.value = '';
+                startNumberInput.value = 1;
                 numberColor.value = '#e74c3c';
                 colorValue.textContent = '#e74c3c';
-                positionX.value = 90;
-                positionY.value = 90;
-                imageWidth.value = 100;
-                imageHeight.value = 100;
-                columnsInput.value = 2;
-                rowsInput.value = 2;
+                numberSize.value = 180;
+                positionX.value = 85;
+                positionY.value = 85;
+                imageSize.value = 100;
+                imageStyle.value = 'cover';
+                columnsInput.value = 3;
+                rowsInput.value = 3;
                 
                 updateSliderValues();
                 
@@ -622,15 +729,18 @@
             uploadSection.addEventListener('dragover', function(e) {
                 e.preventDefault();
                 this.style.borderColor = '#3498db';
+                this.style.backgroundColor = '#d4edff';
             });
             
             uploadSection.addEventListener('dragleave', function() {
                 this.style.borderColor = '#ccc';
+                this.style.backgroundColor = '#e8f4fc';
             });
             
             uploadSection.addEventListener('drop', function(e) {
                 e.preventDefault();
                 this.style.borderColor = '#ccc';
+                this.style.backgroundColor = '#e8f4fc';
                 
                 if (e.dataTransfer.files.length) {
                     imageUpload.files = e.dataTransfer.files;
