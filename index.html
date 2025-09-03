@@ -6,19 +6,16 @@
 <title>تعديل الصور بالأرقام العربية</title>
 <style>
   body { font-family: 'Tahoma', sans-serif; display: flex; flex-direction: column; align-items: center; margin: 20px; }
-  #canvas { display:none; } 
   .controls { margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap; }
   input, select, button, label { padding: 5px; font-size: 16px; }
-  #preview { margin-top: 20px; display: grid; gap: 10px; grid-template-columns: repeat(3, 1fr); position: relative; }
-  .preview-item { position: relative; }
-  .preview-item canvas { border: 1px solid #aaa; width: 100%; cursor: grab; display:block; }
-  .preview-item button { position:absolute; top:5px; left:5px; z-index:10; padding:2px 5px; font-size:14px; }
+  #preview { margin-top: 20px; width: 210mm; height: 297mm; border:1px solid #000; position: relative; background:#fff; display:flex; flex-wrap:wrap; justify-content:flex-start; }
+  #preview canvas { cursor: grab; }
   .slider-group { display:flex; flex-direction:column; align-items:center; margin-top:5px; }
 </style>
 </head>
 <body>
 
-<h2>تعديل الصور بالأرقام العربية مع معاينة A4</h2>
+<h2>تعديل الصور بالأرقام العربية – معاينة A4</h2>
 
 <div class="controls">
   <input type="file" id="imageInput" accept="image/*">
@@ -31,7 +28,6 @@
     <option value="Tahoma">Tahoma</option>
   </select>
   <input type="number" id="fontSize" placeholder="حجم الخط" value="40">
-  <button id="addNumber">أضف الرقم</button>
   <button id="previewButton">عرض المعاينة</button>
   <button id="printButton">طباعة</button>
 </div>
@@ -45,11 +41,10 @@
   <input type="range" id="sliderY" min="-300" max="300" value="0">
 </div>
 
-<canvas id="canvas" width="800" height="600"></canvas>
+<canvas id="canvas" width="800" height="600" style="display:none;"></canvas>
 <div id="preview"></div>
 
 <script>
-// تحويل الرقم العربي
 function toArabicNumber(num){
     const arabicNums = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
     return num.toString().split('').map(d => arabicNums[d]||d).join('');
@@ -58,7 +53,7 @@ function toArabicNumber(num){
 let canvas = document.getElementById('canvas');
 let ctx = canvas.getContext('2d');
 let img = new Image();
-let numbers = [];
+let number = { x:50, y:50, color:'#ff0000', font:'Meri', size:40 };
 
 let offsetAllX = 0;
 let offsetAllY = 0;
@@ -79,24 +74,28 @@ document.getElementById('imageInput').addEventListener('change', e => {
         const reader = new FileReader();
         reader.onload = event => {
             img.src = event.target.result;
+            img.onload = () => updatePreview();
         }
         reader.readAsDataURL(file);
     }
 });
 
-// إضافة الرقم الأساسي
-document.getElementById('addNumber').addEventListener('click', () => {
-    const color = document.getElementById('colorInput').value;
-    const font = document.getElementById('fontSelect').value;
-    const size = parseInt(document.getElementById('fontSize').value);
-    numbers.push({x: 50, y: 50, color, font, size});
-    alert('تم إضافة الرقم. يمكن سحبه في المعاينة بعد عرضها.');
+// أي تعديل يظهر مباشرة
+document.getElementById('colorInput').addEventListener('input', e=>{
+    number.color = e.target.value;
+    updatePreview();
+});
+document.getElementById('fontSelect').addEventListener('change', e=>{
+    number.font = e.target.value;
+    updatePreview();
+});
+document.getElementById('fontSize').addEventListener('input', e=>{
+    number.size = parseInt(e.target.value);
+    updatePreview();
 });
 
 // عرض المعاينة
-document.getElementById('previewButton').addEventListener('click', () => {
-    updatePreview();
-});
+document.getElementById('previewButton').addEventListener('click', updatePreview);
 
 function updatePreview(){
     const start = parseInt(document.getElementById('startNumber').value);
@@ -107,82 +106,59 @@ function updatePreview(){
     previewDiv.innerHTML = '';
 
     for(let i=start;i<=end;i++){
-        let wrapper = document.createElement('div');
-        wrapper.className = 'preview-item';
-
         let tempCanvas = document.createElement('canvas');
-        tempCanvas.width = 250;
-        tempCanvas.height = 180;
+        tempCanvas.width = 210*3; // تقريب A4 عرض بالبكسل
+        tempCanvas.height = 297*3; // تقريب A4 طول بالبكسل
         let tempCtx = tempCanvas.getContext('2d');
-
-        // نسخة مستقلة من الأرقام لكل صفحة
-        let pageNumbers = numbers.map(n => ({...n}));
 
         function drawPage(){
             tempCtx.clearRect(0,0,tempCanvas.width,tempCanvas.height);
             tempCtx.drawImage(img,0,0,tempCanvas.width,tempCanvas.height);
-            pageNumbers.forEach(n=>{
-                tempCtx.fillStyle = n.color;
-                tempCtx.font = `${n.size}px ${n.font}`;
-                tempCtx.fillText(toArabicNumber(i), n.x/800*tempCanvas.width + offsetAllX, n.y/600*tempCanvas.height + offsetAllY);
-            });
+            tempCtx.fillStyle = number.color;
+            tempCtx.font = `${number.size}px ${number.font}`;
+            tempCtx.fillText(toArabicNumber(i), number.x + offsetAllX, number.y + offsetAllY);
         }
 
         drawPage();
 
-        // زر فوق كل مربع
-        let btn = document.createElement('button');
-        btn.textContent = 'وظيفة';
-        btn.onclick = () => alert('يمكن إضافة الوظيفة هنا للرقم '+i);
-
-        wrapper.appendChild(tempCanvas);
-        wrapper.appendChild(btn);
-
-        // تمكين سحب الرقم داخل هذه الصفحة فقط
-        let selected = null, offsetX=0, offsetY=0;
-        tempCanvas.addEventListener('mousedown', e => {
+        // سحب الرقم داخل كل صفحة
+        let selected=null, offsetX=0, offsetY=0;
+        tempCanvas.addEventListener('mousedown', e=>{
             const rect = tempCanvas.getBoundingClientRect();
             const mx = e.clientX - rect.left;
             const my = e.clientY - rect.top;
-            selected = null;
-            for(let j=pageNumbers.length-1;j>=0;j--){
-                let n = pageNumbers[j];
-                let width = tempCtx.measureText('0').width;
-                let height = n.size;
-                let nx = n.x/800*tempCanvas.width + offsetAllX;
-                let ny = n.y/600*tempCanvas.height + offsetAllY;
-                if(mx>=nx && mx<=nx+width && my<=ny && my>=ny-height){
-                    selected = n;
-                    offsetX = mx - nx;
-                    offsetY = my - ny;
-                    break;
-                }
+            const width = tempCtx.measureText(toArabicNumber(i)).width;
+            const height = number.size;
+            if(mx>=number.x+offsetAllX && mx<=number.x+offsetAllX+width && my<=number.y+offsetAllY && my>=number.y+offsetAllY-height){
+                selected = true;
+                offsetX = mx - (number.x+offsetAllX);
+                offsetY = my - (number.y+offsetAllY);
             }
         });
-        tempCanvas.addEventListener('mousemove', e => {
+        tempCanvas.addEventListener('mousemove', e=>{
             if(selected){
                 const rect = tempCanvas.getBoundingClientRect();
-                let mx = e.clientX - rect.left;
-                let my = e.clientY - rect.top;
-                selected.x = (mx - offsetX - offsetAllX)/(tempCanvas.width/800);
-                selected.y = (my - offsetY - offsetAllY)/(tempCanvas.height/600);
+                const mx = e.clientX - rect.left;
+                const my = e.clientY - rect.top;
+                number.x = mx - offsetX - offsetAllX;
+                number.y = my - offsetY - offsetAllY;
                 drawPage();
             }
         });
-        tempCanvas.addEventListener('mouseup', ()=> selected=null);
-        tempCanvas.addEventListener('mouseout', ()=> selected=null);
+        tempCanvas.addEventListener('mouseup', ()=> selected=false);
+        tempCanvas.addEventListener('mouseout', ()=> selected=false);
 
-        previewDiv.appendChild(wrapper);
+        previewDiv.appendChild(tempCanvas);
     }
 }
 
-// طباعة المعاينة
+// الطباعة على شكل A4
 document.getElementById('printButton').addEventListener('click', () => {
     const previewDiv = document.getElementById('preview');
     let printWindow = window.open('', '', 'width=800,height=600');
-    printWindow.document.write('<html><head><title>الطباعة</title></head><body style="display:flex;flex-wrap:wrap;justify-content:flex-start;">');
+    printWindow.document.write('<html><head><title>الطباعة</title></head><body style="margin:0;display:flex;flex-direction:column;align-items:center;">');
     Array.from(previewDiv.querySelectorAll('canvas')).forEach(c=>{
-        printWindow.document.write(`<img src="${c.toDataURL()}" style="margin:5px; width:250px; height:180px;">`);
+        printWindow.document.write(`<img src="${c.toDataURL()}" style="width:210mm; height:297mm; margin-bottom:5px;">`);
     });
     printWindow.document.write('</body></html>');
     printWindow.document.close();
