@@ -222,6 +222,9 @@
             border-radius: 10px;
             max-height: 700px;
             margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
         }
         
         .image-grid {
@@ -310,6 +313,89 @@
             background: linear-gradient(to right, #c0392b, #d35400);
         }
         
+        /* معاينة A4 الجديدة */
+        .a4-preview-container {
+            width: 100%;
+            background: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            overflow: auto;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        
+        .a4-page {
+            width: 794px; /* 210mm * 3.78 (تحويل mm إلى px) */
+            height: 1123px; /* 297mm * 3.78 */
+            background: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            margin: 0 auto;
+            position: relative;
+            page-break-after: always;
+            break-after: page;
+        }
+        
+        .a4-grid {
+            display: grid;
+            width: 100%;
+            height: 100%;
+            margin: 0 auto;
+        }
+        
+        .a4-cell {
+            position: relative;
+            border: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: #f9f9f9;
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+        
+        .a4-cell img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .a4-number {
+            position: absolute;
+            font-family: 'Lateef', cursive;
+            color: #e74c3c;
+            font-weight: bold;
+            z-index: 10;
+            pointer-events: none;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .preview-toggle {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 15px;
+            gap: 10px;
+        }
+        
+        .toggle-btn {
+            padding: 10px 20px;
+            background: #ddd;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .toggle-btn.active {
+            background: #3498db;
+            color: white;
+        }
+        
         @media (max-width: 1100px) {
             .app-content {
                 flex-direction: column;
@@ -317,6 +403,12 @@
             
             .preview-section {
                 width: 100%;
+            }
+            
+            .a4-page {
+                width: 100%;
+                height: auto;
+                aspect-ratio: 1/1.414; /* نسبة A4 */
             }
         }
         
@@ -437,7 +529,8 @@
             }
 
             .action-buttons, .control-panel, header,
-            .preview-container, .app-description {
+            .preview-container, .app-description, .a4-preview-container,
+            .preview-toggle {
                 display: none !important;
             }
             
@@ -579,9 +672,23 @@
             
             <section class="preview-section">
                 <h2>معاينة الشبكة</h2>
-                <div class="preview-container">
+                
+                <div class="preview-toggle">
+                    <button class="toggle-btn active" id="normalPreviewBtn">المعاينة العادية</button>
+                    <button class="toggle-btn" id="a4PreviewBtn">معاينة الطباعة (A4)</button>
+                </div>
+                
+                <div class="preview-container" id="normalPreview">
                     <div class="image-grid" id="gridContainer">
                         <!-- سيتم إنشاء الخلايا الشبكية هنا via JavaScript -->
+                    </div>
+                </div>
+                
+                <div class="a4-preview-container" id="a4Preview">
+                    <div class="a4-page">
+                        <div class="a4-grid" id="a4GridContainer">
+                            <!-- سيتم إنشاء خلايا A4 هنا via JavaScript -->
+                        </div>
                     </div>
                 </div>
                 
@@ -623,13 +730,20 @@
             const verticalGap = document.getElementById('verticalGap');
             const verticalGapValue = document.getElementById('verticalGapValue');
             const gridContainer = document.getElementById('gridContainer');
+            const a4GridContainer = document.getElementById('a4GridContainer');
             const printBtn = document.getElementById('printBtn');
             const resetBtn = document.getElementById('resetBtn');
             const printVersion = document.getElementById('printVersion');
+            const normalPreviewBtn = document.getElementById('normalPreviewBtn');
+            const a4PreviewBtn = document.getElementById('a4PreviewBtn');
+            const normalPreview = document.getElementById('normalPreview');
+            const a4Preview = document.getElementById('a4Preview');
             
             // حالة التطبيق
             let currentImage = null;
             let currentCells = [];
+            let currentA4Cells = [];
+            let isA4Preview = false;
             
             // تحويل الأرقام الإنجليزية إلى عربية
             function convertToArabicNumbers(number) {
@@ -640,7 +754,6 @@
             // إنشاء الشبكة بناءً على عدد الأعمدة والصفوف
             function createGrid() {
                 const columns = parseInt(columnsInput.value) || 3;
-                const rows = parseInt(rowsInput.value) || 3;
                 const totalNumbers = parseInt(totalNumbersInput.value) || 9;
                 const cellWidthVal = parseInt(cellWidth.value) || 200;
                 const cellHeightVal = parseInt(cellHeight.value) || 200;
@@ -656,9 +769,8 @@
                 
                 currentCells = [];
                 
-                // إنشاء الخلايا - التصحيح هنا: استخدام totalNumbers مباشرة بدلاً من الحد الأدنى
-                const totalCells = totalNumbers;
-                for (let i = 0; i < totalCells; i++) {
+                // إنشاء الخلايا
+                for (let i = 0; i < totalNumbers; i++) {
                     const cell = document.createElement('div');
                     cell.className = 'grid-cell';
                     cell.id = `cell-${i}`;
@@ -682,9 +794,77 @@
                     });
                 }
                 
+                // إنشاء معاينة A4
+                createA4Preview();
+                
                 // إذا كانت هناك صورة محملة، أضفها إلى الخلايا
                 if (currentImage) {
                     addImageToCells();
+                }
+            }
+            
+            // إنشاء معاينة A4
+            function createA4Preview() {
+                const columns = parseInt(columnsInput.value) || 3;
+                const totalNumbers = parseInt(totalNumbersInput.value) || 9;
+                const cellWidthVal = parseInt(cellWidth.value) || 200;
+                const cellHeightVal = parseInt(cellHeight.value) || 200;
+                const horizontalGapVal = parseInt(horizontalGap.value) || 15;
+                const verticalGapVal = parseInt(verticalGap.value) || 15;
+                const startNumber = parseInt(startNumberInput.value) || 1;
+                
+                // مسح المحتوى الحالي
+                a4GridContainer.innerHTML = '';
+                
+                // حساب عدد الخلايا التي يمكن وضعها في صفحة A4
+                const pageWidth = 794; // عرض A4 بالبكسل
+                const pageHeight = 1123; // ارتفاع A4 بالبكسل
+                const padding = 40; // الحشو الداخلي للصفحة
+                
+                const availableWidth = pageWidth - (padding * 2);
+                const availableHeight = pageHeight - (padding * 2);
+                
+                // حساب عدد الخلايا التي يمكن وضعها في الصفحة
+                const cellsPerRow = Math.floor(availableWidth / (cellWidthVal + horizontalGapVal));
+                const cellsPerColumn = Math.floor(availableHeight / (cellHeightVal + verticalGapVal));
+                const cellsPerPage = cellsPerRow * cellsPerColumn;
+                
+                // إنشاء الشبكة لصفحة A4
+                a4GridContainer.style.gridTemplateColumns = `repeat(${cellsPerRow}, ${cellWidthVal}px)`;
+                a4GridContainer.style.gridTemplateRows = `repeat(${cellsPerColumn}, ${cellHeightVal}px)`;
+                a4GridContainer.style.gap = `${verticalGapVal}px ${horizontalGapVal}px`;
+                
+                currentA4Cells = [];
+                
+                // إنشاء الخلايا لمعاينة A4 (نعرض فقط الخلايا التي تناسب الصفحة الأولى)
+                const cellsToShow = Math.min(totalNumbers, cellsPerPage);
+                for (let i = 0; i < cellsToShow; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'a4-cell';
+                    cell.id = `a4-cell-${i}`;
+                    cell.style.width = `${cellWidthVal}px`;
+                    cell.style.height = `${cellHeightVal}px`;
+                    
+                    const numberOverlay = document.createElement('div');
+                    numberOverlay.className = 'a4-number';
+                    numberOverlay.id = `a4-number-${i}`;
+                    numberOverlay.textContent = convertToArabicNumbers(startNumber + i);
+                    numberOverlay.style.color = numberColor.value;
+                    numberOverlay.style.fontSize = numberSize.value + 'px';
+                    updateNumberPosition(numberOverlay);
+                    
+                    cell.appendChild(numberOverlay);
+                    a4GridContainer.appendChild(cell);
+                    
+                    currentA4Cells.push({
+                        element: cell,
+                        numberElement: numberOverlay
+                    });
+                }
+                
+                // إذا كانت هناك صورة محملة، أضفها إلى خلايا A4
+                if (currentImage) {
+                    addImageToA4Cells();
                 }
             }
             
@@ -696,8 +876,6 @@
                 element.style.left = `${xPos}%`;
                 element.style.top = `${yPos}%`;
                 element.style.transform = 'translate(-50%, -50%)';
-                element.style.right = 'auto';
-                element.style.bottom = 'auto';
             }
             
             // تحديث جميع الأرقام في الخلايا
@@ -705,6 +883,14 @@
                 const startNumber = parseInt(startNumberInput.value) || 1;
                 
                 currentCells.forEach((cell, index) => {
+                    const arabicNumber = convertToArabicNumbers(startNumber + index);
+                    cell.numberElement.textContent = arabicNumber;
+                    cell.numberElement.style.color = numberColor.value;
+                    cell.numberElement.style.fontSize = numberSize.value + 'px';
+                    updateNumberPosition(cell.numberElement);
+                });
+                
+                currentA4Cells.forEach((cell, index) => {
                     const arabicNumber = convertToArabicNumbers(startNumber + index);
                     cell.numberElement.textContent = arabicNumber;
                     cell.numberElement.style.color = numberColor.value;
@@ -722,6 +908,7 @@
                 reader.onload = function(e) {
                     currentImage = e.target.result;
                     addImageToCells();
+                    addImageToA4Cells();
                 };
                 reader.readAsDataURL(file);
             }
@@ -729,6 +916,26 @@
             // إضافة الصورة إلى جميع الخلايا
             function addImageToCells() {
                 currentCells.forEach(cell => {
+                    // إزالة أي صور موجودة مسبقاً
+                    const existingImg = cell.element.querySelector('img');
+                    if (existingImg) {
+                        cell.element.removeChild(existingImg);
+                    }
+                    
+                    // إضافة الصورة الجديدة
+                    const img = document.createElement('img');
+                    img.src = currentImage;
+                    img.alt = "صورة الشبكة";
+                    cell.element.appendChild(img);
+                    
+                    // التأكد من أن الرقم يظهر فوق الصورة
+                    cell.element.appendChild(cell.numberElement);
+                });
+            }
+            
+            // إضافة الصورة إلى جميع خلايا A4
+            function addImageToA4Cells() {
+                currentA4Cells.forEach(cell => {
                     // إزالة أي صور موجودة مسبقاً
                     const existingImg = cell.element.querySelector('img');
                     if (existingImg) {
@@ -761,7 +968,6 @@
             function createPrintVersion() {
                 printVersion.innerHTML = '';
                 
-                const columns = parseInt(columnsInput.value) || 3;
                 const totalNumbers = parseInt(totalNumbersInput.value) || 9;
                 const startNumber = parseInt(startNumberInput.value) || 1;
                 const cellWidthVal = parseInt(cellWidth.value) || 200;
@@ -832,6 +1038,25 @@
                 }
             }
             
+            // تبديل بين نمط المعاينة
+            function togglePreviewMode(isA4Mode) {
+                isA4Preview = isA4Mode;
+                
+                if (isA4Mode) {
+                    normalPreviewBtn.classList.remove('active');
+                    a4PreviewBtn.classList.add('active');
+                    normalPreview.style.display = 'none';
+                    a4Preview.style.display = 'flex';
+                    createA4Preview();
+                } else {
+                    normalPreviewBtn.classList.add('active');
+                    a4PreviewBtn.classList.remove('active');
+                    normalPreview.style.display = 'flex';
+                    a4Preview.style.display = 'none';
+                    createGrid();
+                }
+            }
+            
             // إعداد event listeners
             uploadTrigger.addEventListener('click', function() {
                 imageUpload.click();
@@ -840,7 +1065,12 @@
             imageUpload.addEventListener('change', loadImage);
             
             startNumberInput.addEventListener('input', updateAllNumbers);
-            totalNumbersInput.addEventListener('input', createGrid);
+            totalNumbersInput.addEventListener('input', function() {
+                createGrid();
+                if (isA4Preview) {
+                    createA4Preview();
+                }
+            });
             
             numberColor.addEventListener('input', function() {
                 colorValue.textContent = this.value;
@@ -857,6 +1087,9 @@
                 currentCells.forEach(cell => {
                     updateNumberPosition(cell.numberElement);
                 });
+                currentA4Cells.forEach(cell => {
+                    updateNumberPosition(cell.numberElement);
+                });
             });
             
             positionY.addEventListener('input', function() {
@@ -864,14 +1097,45 @@
                 currentCells.forEach(cell => {
                     updateNumberPosition(cell.numberElement);
                 });
+                currentA4Cells.forEach(cell => {
+                    updateNumberPosition(cell.numberElement);
+                });
             });
             
-            columnsInput.addEventListener('input', createGrid);
-            rowsInput.addEventListener('input', createGrid);
-            cellWidth.addEventListener('input', createGrid);
-            cellHeight.addEventListener('input', createGrid);
-            horizontalGap.addEventListener('input', createGrid);
-            verticalGap.addEventListener('input', createGrid);
+            columnsInput.addEventListener('input', function() {
+                createGrid();
+                if (isA4Preview) {
+                    createA4Preview();
+                }
+            });
+            
+            cellWidth.addEventListener('input', function() {
+                createGrid();
+                if (isA4Preview) {
+                    createA4Preview();
+                }
+            });
+            
+            cellHeight.addEventListener('input', function() {
+                createGrid();
+                if (isA4Preview) {
+                    createA4Preview();
+                }
+            });
+            
+            horizontalGap.addEventListener('input', function() {
+                createGrid();
+                if (isA4Preview) {
+                    createA4Preview();
+                }
+            });
+            
+            verticalGap.addEventListener('input', function() {
+                createGrid();
+                if (isA4Preview) {
+                    createA4Preview();
+                }
+            });
             
             printBtn.addEventListener('click', function() {
                 createPrintVersion();
@@ -891,7 +1155,6 @@
                 positionX.value = 85;
                 positionY.value = 85;
                 columnsInput.value = 3;
-                rowsInput.value = 3;
                 cellWidth.value = 200;
                 cellHeight.value = 200;
                 horizontalGap.value = 15;
@@ -907,7 +1170,25 @@
                     }
                 });
                 
+                currentA4Cells.forEach(cell => {
+                    const img = cell.element.querySelector('img');
+                    if (img) {
+                        cell.element.removeChild(img);
+                    }
+                });
+                
                 createGrid();
+                if (isA4Preview) {
+                    createA4Preview();
+                }
+            });
+            
+            normalPreviewBtn.addEventListener('click', function() {
+                togglePreviewMode(false);
+            });
+            
+            a4PreviewBtn.addEventListener('click', function() {
+                togglePreviewMode(true);
             });
             
             // تمكين سحب وإفلات الصور
