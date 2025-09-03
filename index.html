@@ -235,15 +235,6 @@
             transform: translateY(-2px);
         }
         
-        #refreshBtn {
-            background: linear-gradient(to right, #9b59b6, #8e44ad);
-        }
-        
-        #refreshBtn:hover {
-            background: linear-gradient(to right, #8e44ad, #7d3c98);
-            transform: translateY(-2px);
-        }
-        
         #printBtn {
             background: linear-gradient(to right, #e74c3c, #c0392b);
         }
@@ -396,28 +387,63 @@
         
         /* تنسيقات الطباعة */
         @media print {
+            body, html {
+                width: 100%;
+                height: auto;
+                margin: 0;
+                padding: 0;
+                background: white !important;
+            }
+            
             body * {
                 visibility: hidden;
             }
-            .preview-section, .preview-section * {
+            
+            .print-section, .print-section * {
                 visibility: visible;
             }
-            .preview-section {
+            
+            .print-section {
                 position: absolute;
                 left: 0;
                 top: 0;
                 width: 100%;
-            }
-            .preview-container {
+                height: auto;
+                background: white;
                 display: grid;
-                gap: 10px;
+                gap: 10mm;
+                padding: 15mm;
+                grid-template-columns: repeat(3, 1fr);
             }
-            .preview-item {
+            
+            .print-item {
+                width: 100%;
+                height: 60mm;
+                position: relative;
+                page-break-inside: avoid;
                 break-inside: avoid;
-                height: 200px;
             }
-            .preview-number {
-                font-size: 40px;
+            
+            .print-image {
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+            }
+            
+            .print-number {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                font-family: 'Lateef', cursive;
+                font-size: 20mm;
+                color: #ff0000;
+                font-weight: bold;
+                text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+            }
+            
+            .container, .app-content, .preview-section {
+                display: none;
             }
         }
     </style>
@@ -498,7 +524,6 @@
                 </div>
                 
                 <div class="button-group">
-                    <button id="refreshBtn"><i>🔄</i> تحديث الصفحة</button>
                     <button id="printBtn"><i>🖨️</i> طباعة</button>
                 </div>
                 
@@ -533,6 +558,9 @@
         </div>
     </div>
 
+    <!-- قسم الطباعة المخفي -->
+    <div id="printSection" class="print-section" style="display: none;"></div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // عناصر DOM
@@ -540,13 +568,13 @@
             const uploadedImage = document.getElementById('uploadedImage');
             const uploadPlaceholder = document.getElementById('uploadPlaceholder');
             const addNumberBtn = document.getElementById('addNumberBtn');
-            const refreshBtn = document.getElementById('refreshBtn');
             const printBtn = document.getElementById('printBtn');
             const printModal = document.getElementById('printModal');
             const confirmPrint = document.getElementById('confirmPrint');
             const cancelPrint = document.getElementById('cancelPrint');
             const finalNumber = document.getElementById('finalNumber');
             const previewContainer = document.getElementById('previewContainer');
+            const printSection = document.getElementById('printSection');
             const columnsNumber = document.getElementById('columnsNumber');
             const columnsValue = document.getElementById('columnsValue');
             const previewCount = document.getElementById('previewCount');
@@ -763,6 +791,11 @@
                         previewNumber.style.textShadow = '2px 2px 4px rgba(0,0,0,0.7)';
                         previewNumber.style.background = 'none';
                         
+                        // تطبيق نفس الموقع بالنسبة المئوية
+                        previewNumber.style.left = positionX.value + '%';
+                        previewNumber.style.top = positionY.value + '%';
+                        previewNumber.style.transform = 'translate(-50%, -50%)';
+                        
                         previewItem.appendChild(previewImage);
                         previewItem.appendChild(previewNumber);
                         
@@ -772,11 +805,6 @@
                     isProcessing = false;
                 });
             }
-            
-            // تحديث الصفحة
-            refreshBtn.addEventListener('click', function() {
-                location.reload();
-            });
             
             // فتح نافذة الطباعة
             printBtn.addEventListener('click', function() {
@@ -814,41 +842,46 @@
                 isProcessing = true;
                 
                 // مسح المعاينات القديمة
-                previewContainer.innerHTML = '';
+                printSection.innerHTML = '';
                 
                 const start = parseInt(startNumber.value);
-                const count = Math.min(total, 12);
+                const columns = parseInt(columnsNumber.value);
+                
+                // تعيين تخطيط الطباعة
+                printSection.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
                 
                 // استخدام requestAnimationFrame لتحسين الأداء
                 requestAnimationFrame(function() {
-                    for (let i = 0; i < count; i++) {
+                    for (let i = 0; i < total; i++) {
                         const num = start + i;
-                        if (num > start + total - 1) break;
                         
-                        const previewItem = document.createElement('div');
-                        previewItem.className = 'preview-item';
+                        const printItem = document.createElement('div');
+                        printItem.className = 'print-item';
                         
-                        const previewImage = document.createElement('img');
-                        previewImage.className = 'preview-image';
-                        previewImage.src = imageDataURL;
+                        const printImage = document.createElement('img');
+                        printImage.className = 'print-image';
+                        printImage.src = imageDataURL;
                         
-                        const previewNumber = document.createElement('div');
-                        previewNumber.className = 'preview-number';
-                        previewNumber.textContent = convertToArabicNumerals(num);
-                        previewNumber.style.fontSize = (parseInt(fontSize.value) * 0.4) + 'px';
-                        previewNumber.style.color = fontColor.value;
-                        previewNumber.style.fontWeight = 'bold';
-                        previewNumber.style.textShadow = '2px 2px 4px rgba(0,0,0,0.7)';
-                        previewNumber.style.background = 'none';
+                        const printNumber = document.createElement('div');
+                        printNumber.className = 'print-number';
+                        printNumber.textContent = convertToArabicNumerals(num);
+                        printNumber.style.color = fontColor.value;
+                        printNumber.style.fontSize = (parseInt(fontSize.value) * 0.8) + 'px';
+                        printNumber.style.fontWeight = 'bold';
+                        printNumber.style.textShadow = '2px 2px 4px rgba(0,0,0,0.7)';
                         
-                        previewItem.appendChild(previewImage);
-                        previewItem.appendChild(previewNumber);
+                        // تطبيق نفس الموقع بالنسبة المئوية
+                        printNumber.style.left = positionX.value + '%';
+                        printNumber.style.top = positionY.value + '%';
                         
-                        previewContainer.appendChild(previewItem);
+                        printItem.appendChild(printImage);
+                        printItem.appendChild(printNumber);
+                        
+                        printSection.appendChild(printItem);
                     }
                     
-                    // تحديث تخطيط المعاينة
-                    updatePreviewLayout();
+                    // إظهار قسم الطباعة
+                    printSection.style.display = 'grid';
                     
                     isProcessing = false;
                 });
