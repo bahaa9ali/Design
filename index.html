@@ -15,47 +15,57 @@
     --num-color: #000;   /* لون الرقم */
     --shadow-color: #000;/* لون الظل */
     --shadow-blur: 3;    /* شدة الظل px */
+    --transition-time: 0.2s; /* وقت الانتقال للسلاسة */
   }
 
   *{box-sizing:border-box}
-  body{font-family:system-ui, "Amiri", Tahoma, Arial; background:#f2f4f8; margin:0; padding:16px; color:#222}
-  .app{max-width:1200px; margin:auto; background:#fff; border-radius:14px; box-shadow:0 8px 28px rgba(0,0,0,.09); padding:18px}
-  h1{margin:0 0 12px; font-size:clamp(20px,3vw,28px)}
+  body{font-family:system-ui, "Amiri", Tahoma, Arial; background:#f2f4f8; margin:0; padding:16px; color:#222; line-height:1.5}
+  .app{max-width:1200px; margin:auto; background:#fff; border-radius:14px; box-shadow:0 8px 28px rgba(0,0,0,.09); padding:18px; transition:box-shadow var(--transition-time) ease}
+  h1{margin:0 0 12px; font-size:clamp(20px,3vw,28px); text-align:center}
   .grid{display:grid; grid-template-columns: 320px 1fr; gap:16px}
   @media (max-width: 900px){ .grid{grid-template-columns:1fr} }
 
-  .card{border:1px solid #e6e9ef; border-radius:12px; padding:14px}
-  .card h2{font-size:18px; margin:0 0 10px}
-  label{font-size:14px; color:#444}
-  input[type="number"], input[type="range"], input[type="color"], input[type="text"]{width:100%; padding:10px; margin:6px 0 12px; border:1px solid #dde2ea; border-radius:8px}
+  .card{border:1px solid #e6e9ef; border-radius:12px; padding:14px; transition:border-color var(--transition-time) ease, box-shadow var(--transition-time) ease}
+  .card:hover{box-shadow:0 4px 12px rgba(0,0,0,.05); border-color:#dde2ea}
+  .card h2{font-size:18px; margin:0 0 10px; color:#333}
+  label{font-size:14px; color:#444; display:block; margin-bottom:4px}
+  input[type="number"], input[type="range"], input[type="color"], input[type="text"]{width:100%; padding:10px; margin:6px 0 12px; border:1px solid #dde2ea; border-radius:8px; transition:border-color var(--transition-time) ease}
+  input:focus{outline:none; border-color:#2575fc}
   .row{display:grid; grid-template-columns: 1fr 1fr; gap:10px}
-  .actions{display:flex; flex-wrap:wrap; gap:10px; margin-top:8px}
-  button{border:0; border-radius:999px; padding:12px 16px; cursor:pointer; font-weight:600}
+  .actions{display:flex; flex-wrap:wrap; gap:10px; margin-top:8px; justify-content:center}
+  button{border:0; border-radius:999px; padding:12px 16px; cursor:pointer; font-weight:600; transition:transform var(--transition-time) ease, background var(--transition-time) ease}
+  button:hover{transform:scale(1.05)}
   .btn-primary{background:linear-gradient(90deg,#6a11cb,#2575fc); color:#fff}
-  .btn-ghost{background:#f2f4f8}
+  .btn-primary:hover{background:linear-gradient(90deg,#5a0fb0,#1f62d6)}
+  .btn-ghost{background:#f2f4f8; color:#333}
+  .btn-ghost:hover{background:#e6e9ef}
   .btn-success{background:linear-gradient(90deg,#1aa34a,#31c26d); color:#fff}
+  .btn-success:hover{background:linear-gradient(90deg,#17913f,#2ba85f)}
   .btn-danger{background:linear-gradient(90deg,#e74c3c,#c0392b); color:#fff}
+  .btn-danger:hover{background:linear-gradient(90deg,#d43f30,#ad3327)}
 
   /* معاينة موضع الرقم فوق صورة القالب */
-  .template{position:relative; border:1px dashed #c7cfdb; border-radius:10px; overflow:hidden; background:#fafbff}
-  .template img{display:block; width:100%; height:auto}
-  .tpl-number{position:absolute; left:var(--num-x,% 50); top:var(--num-y,% 20); transform:translate(-50%,-50%); font-weight:700; font-size:calc(var(--num-size, 26) * 1px); color:var(--num-color, #000); text-shadow: var(--shadow-blur, 3)px var(--shadow-blur, 3)px var(--shadow-blur, 3)px var(--shadow-color, #000); cursor:grab; user-select:none; z-index:3}
+  .template{position:relative; border:1px dashed #c7cfdb; border-radius:10px; overflow:hidden; background:#fafbff; transition:border-color var(--transition-time) ease}
+  .template:hover{border-color:#2575fc}
+  .template img{display:block; width:100%; height:auto; transition:opacity var(--transition-time) ease}
+  .tpl-number{position:absolute; left:var(--num-x,% 50); top:var(--num-y,% 20); transform:translate(-50%,-50%); font-weight:700; font-size:calc(var(--num-size, 26) * 1px); color:var(--num-color, #000); text-shadow: var(--shadow-blur, 3)px var(--shadow-blur, 3)px var(--shadow-blur, 3)px var(--shadow-color, #000); cursor:grab; user-select:none; z-index:3; transition:left var(--transition-time) ease, top var(--transition-time) ease, font-size var(--transition-time) ease, color var(--transition-time) ease, text-shadow var(--transition-time) ease}
   .tpl-number:active{cursor:grabbing}
 
   /* مساحة الطباعة */
-  .print-area{border:1px solid #e6e9ef; border-radius:12px; overflow:auto; background:#fff; padding:10px}
-  .sheet{width:210mm; height:297mm; margin:auto; background:#fff; position:relative; page-break-after:always; border:1px solid #f0f2f6}
+  .print-area{border:1px solid #e6e9ef; border-radius:12px; overflow:auto; background:#fff; padding:10px; transition:border-color var(--transition-time) ease}
+  .print-area:hover{border-color:#dde2ea}
+  .sheet{width:210mm; height:297mm; margin:auto; background:#fff; position:relative; page-break-after:always; border:1px solid #f0f2f6; transition:border-color var(--transition-time) ease}
   .labels{display:grid; width:100%; height:100%;
           grid-template-columns: repeat(var(--cols), 1fr);
           grid-template-rows: repeat(var(--rows), 1fr);
           gap: calc(var(--gap-mm) * 1mm); padding: calc(var(--gap-mm) * 1mm)}
-  .label{position:relative; border:1px solid #eaeef5; border-radius:6px; overflow:hidden; display:flex; align-items:center; justify-content:center}
-  .label img{width:100%; height:100%; object-fit:contain}
+  .label{position:relative; border:1px solid #eaeef5; border-radius:6px; overflow:hidden; display:flex; align-items:center; justify-content:center; transition:border-color var(--transition-time) ease}
+  .label img{width:100%; height:100%; object-fit:contain; transition:opacity var(--transition-time) ease}
   .label .num{position:absolute; left:calc(var(--num-x) * 1%); top:calc(var(--num-y) * 1%);
               transform:translate(-50%,-50%); font-weight:700; font-size:calc(var(--num-size) * 1px);
-              color:var(--num-color); text-shadow: var(--shadow-blur)px var(--shadow-blur)px var(--shadow-blur)px var(--shadow-color)}
+              color:var(--num-color); text-shadow: var(--shadow-blur)px var(--shadow-blur)px var(--shadow-blur)px var(--shadow-color); transition:left var(--transition-time) ease, top var(--transition-time) ease, font-size var(--transition-time) ease, color var(--transition-time) ease, text-shadow var(--transition-time) ease}
 
-  .hint{font-size:13px; color:#6b7280; margin-top:6px}
+  .hint{font-size:13px; color:#6b7280; margin-top:6px; text-align:center}
 
   /* طباعة فعلية */
   @page{ size: A4; margin: 6mm }
@@ -76,66 +86,66 @@
       <!-- الإعدادات -->
       <section class="card">
         <h2>١) الصورة والموضع</h2>
-        <label>اختر الصورة</label>
+        <label for="file">اختر الصورة</label>
         <input type="file" id="file" accept="image/*" />
         <div class="template" id="template" style="aspect-ratio: 4/1">
-          <img id="tplImg" alt="معاينة" />
+          <img id="tplImg" alt="معاينة الصورة" />
           <div id="tplNumber" class="tpl-number">1</div>
         </div>
         <div class="row">
           <div>
-            <label>إزاحة أفقية (٪)</label>
+            <label for="x">إزاحة أفقية (٪)</label>
             <input type="range" id="x" min="0" max="100" value="50" />
           </div>
           <div>
-            <label>إزاحة رأسية (٪)</label>
+            <label for="y">إزاحة رأسية (٪)</label>
             <input type="range" id="y" min="0" max="100" value="20" />
           </div>
         </div>
         <div class="row">
           <div>
-            <label>حجم الرقم (px)</label>
+            <label for="size">حجم الرقم (px)</label>
             <input type="range" id="size" min="12" max="80" value="26" />
           </div>
           <div>
-            <label>لون الرقم</label>
+            <label for="color">لون الرقم</label>
             <input type="color" id="color" value="#000000" />
           </div>
         </div>
         <div class="row">
           <div>
-            <label>لون الظل</label>
+            <label for="shadowColor">لون الظل</label>
             <input type="color" id="shadowColor" value="#000000" />
           </div>
           <div>
-            <label>قيمة الظل (px)</label>
+            <label for="shadowBlur">قيمة الظل (px)</label>
             <input type="range" id="shadowBlur" min="0" max="10" value="3" />
           </div>
         </div>
         <div class="hint">اسحب الرقم مباشرة فوق الصورة لتحديد مكانه، أو استخدم أشرطة التمرير.</div>
-        <hr style="margin:14px 0" />
+        <hr style="margin:14px 0; border-color:#e6e9ef" />
         <h2>٢) الكمية والتخطيط</h2>
         <div class="row">
           <div>
-            <label>عدد الملصقات</label>
+            <label for="count">عدد الملصقات</label>
             <input type="number" id="count" min="1" value="24" />
           </div>
           <div>
-            <label>رقم البداية</label>
+            <label for="start">رقم البداية</label>
             <input type="number" id="start" min="0" value="1" />
           </div>
         </div>
         <div class="row">
           <div>
-            <label>عدد الأعمدة في الصفحة</label>
+            <label for="cols">عدد الأعمدة في الصفحة</label>
             <input type="number" id="cols" min="1" max="6" value="3" />
           </div>
           <div>
-            <label>عدد الصفوف في الصفحة</label>
+            <label for="rows">عدد الصفوف في الصفحة</label>
             <input type="number" id="rows" min="1" max="12" value="8" />
           </div>
         </div>
-        <label>المسافة بين الملصقات (مم)</label>
+        <label for="gap">المسافة بين الملصقات (مم)</label>
         <input type="range" id="gap" min="0" max="15" value="6" />
 
         <div class="actions">
@@ -155,6 +165,7 @@
   </div>
 
 <script>
+  // تعريف العناصر الرئيسية
   const st = document.documentElement.style;
   const file = document.getElementById('file');
   const tplImg = document.getElementById('tplImg');
@@ -180,7 +191,7 @@
   let dragging = false;
   let startPos = {x:0,y:0};
 
-  // تحميل الصورة + ضبط نسبة العرض إلى الارتفاع لمعاينة القالب
+  // تحميل الصورة وتعيين نسبة الأبعاد
   file.addEventListener('change', e => {
     const f = e.target.files[0];
     if(!f) return;
@@ -188,10 +199,9 @@
     reader.onload = ev => {
       imageData = ev.target.result;
       tplImg.src = imageData;
-      // استنتاج نسبة الأبعاد
       const tmp = new Image();
       tmp.onload = () => {
-        const ar = (tmp.width / tmp.height) || 4/1; // افتراضي لو لم يتوفر
+        const ar = (tmp.width / tmp.height) || 4/1;
         template.style.aspectRatio = ar;
       };
       tmp.src = imageData;
@@ -199,7 +209,7 @@
     reader.readAsDataURL(f);
   });
 
-  // ربط عناصر التحكم بالمتغيرات الجذرية
+  // مزامنة المتغيرات الجذرية مع الإدخالات
   function syncCSSVars(){
     st.setProperty('--num-x', x.value);
     st.setProperty('--num-y', y.value);
@@ -210,7 +220,6 @@
     st.setProperty('--cols', Math.max(1, +cols.value));
     st.setProperty('--rows', Math.max(1, +rows.value));
     st.setProperty('--gap-mm', Math.max(0, +gap.value));
-    // تحديث معاينة الرقم
     tplNumber.textContent = start.value || 1;
   }
   [x,y,size,color,shadowColor,shadowBlur,cols,rows,gap,start].forEach(el=>{
@@ -218,10 +227,10 @@
   });
   syncCSSVars();
 
-  // سحب الرقم داخل القالب (بالنسب المئوية دائماً)
+  // وظيفة السحب للرقم داخل القالب
   const pct = (val, total) => Math.max(0, Math.min(100, (val/total)*100));
   template.addEventListener('pointerdown', e => {
-    if(!imageData) return; // لا سحب بلا صورة
+    if(!imageData) return;
     dragging = true;
     template.setPointerCapture(e.pointerId);
     startPos = {x: e.clientX, y: e.clientY};
@@ -239,7 +248,7 @@
     syncCSSVars();
   }
 
-  // إنشاء صفحات المعاينة/الطباعة
+  // بناء الصفحات للمعاينة أو الطباعة
   function buildSheets(){
     if(!imageData){
       alert('الرجاء رفع صورة أولاً');
@@ -275,6 +284,7 @@
         item.className = 'label';
         const img = document.createElement('img');
         img.src = imageData;
+        img.alt = `ملصق رقم ${n}`;
         const num = document.createElement('div');
         num.className = 'num';
         num.textContent = n;
@@ -287,9 +297,10 @@
     }
   }
 
-  document.getElementById('make').addEventListener('click', buildSheets);
-  document.getElementById('print').addEventListener('click', () => { buildSheets(); window.print(); });
-  document.getElementById('reset').addEventListener('click', () => { location.reload(); });
+  // ربط الأحداث بالأزرار
+  makeBtn.addEventListener('click', buildSheets);
+  printBtn.addEventListener('click', () => { buildSheets(); window.print(); });
+  resetBtn.addEventListener('click', () => { location.reload(); });
 </script>
 </body>
 </html>
