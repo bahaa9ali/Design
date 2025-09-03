@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>تعديل الصور بالأرقام</title>
+<title>تعديل الصور بالأرقام العربية</title>
 <style>
   body { font-family: 'Tahoma', sans-serif; display: flex; flex-direction: column; align-items: center; margin: 20px; }
-  canvas { border: 1px solid #ccc; margin-top: 10px; cursor: grab; }
+  #canvas { border: 1px solid #ccc; margin-top: 10px; cursor: grab; }
   .controls { margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap; }
   input, select, button { padding: 5px; font-size: 16px; }
   #preview { margin-top: 20px; display: grid; gap: 10px; grid-template-columns: repeat(3, 1fr); }
@@ -15,7 +15,7 @@
 </head>
 <body>
 
-<h2>تطبيق تعديل الصور بالأرقام مع معاينة A4</h2>
+<h2>تعديل الصور بالأرقام العربية مع معاينة A4</h2>
 
 <div class="controls">
   <input type="file" id="imageInput" accept="image/*">
@@ -37,6 +37,12 @@
 <div id="preview"></div>
 
 <script>
+// تحويل الرقم العربي
+function toArabicNumber(num){
+    const arabicNums = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+    return num.toString().split('').map(d => arabicNums[d]||d).join('');
+}
+
 let canvas = document.getElementById('canvas');
 let ctx = canvas.getContext('2d');
 let img = new Image();
@@ -73,11 +79,11 @@ function draw(number=null){
     numbers.forEach(n => {
         ctx.fillStyle = n.color;
         ctx.font = `${n.size}px ${n.font}`;
-        ctx.fillText(number!==null ? number : '', n.x, n.y);
+        ctx.fillText(number!==null ? toArabicNumber(number) : '', n.x, n.y);
     });
 }
 
-// سحب الرقم
+// سحب الرقم داخل المعاينة
 canvas.addEventListener('mousedown', e => {
     const rect = canvas.getBoundingClientRect();
     const mx = e.clientX - rect.left;
@@ -124,15 +130,56 @@ document.getElementById('previewButton').addEventListener('click', () => {
         numbers.forEach(n=>{
             tempCtx.fillStyle = n.color;
             tempCtx.font = `${n.size}px ${n.font}`;
-            tempCtx.fillText(i,n.x/800*tempCanvas.width,n.y/600*tempCanvas.height);
+            tempCtx.fillText(toArabicNumber(i), n.x/800*tempCanvas.width, n.y/600*tempCanvas.height);
+        });
+        // تمكين تحريك الرقم داخل المعاينة
+        tempCanvas.addEventListener('mousedown', e => {
+            let rect = tempCanvas.getBoundingClientRect();
+            let mx = e.clientX - rect.left;
+            let my = e.clientY - rect.top;
+            let selected = null;
+            for(let j = numbers.length-1;j>=0;j--){
+                let n = numbers[j];
+                let width = tempCtx.measureText('0').width;
+                let height = n.size;
+                if(mx >= n.x/800*tempCanvas.width && mx <= n.x/800*tempCanvas.width + width && my <= n.y/600*tempCanvas.height && my >= n.y/600*tempCanvas.height - height){
+                    selected = n;
+                    offsetX = mx - n.x/800*tempCanvas.width;
+                    offsetY = my - n.y/600*tempCanvas.height;
+                    function move(e){
+                        let mx2 = e.clientX - rect.left - offsetX;
+                        let my2 = e.clientY - rect.top - offsetY;
+                        n.x = mx2/ (tempCanvas.width/800);
+                        n.y = my2/ (tempCanvas.height/600);
+                        tempCtx.clearRect(0,0,tempCanvas.width,tempCanvas.height);
+                        tempCtx.drawImage(img,0,0,tempCanvas.width,tempCanvas.height);
+                        numbers.forEach(nn=>{
+                            tempCtx.fillStyle = nn.color;
+                            tempCtx.font = `${nn.size}px ${nn.font}`;
+                            tempCtx.fillText(toArabicNumber(i), nn.x/800*tempCanvas.width, nn.y/600*tempCanvas.height);
+                        });
+                    }
+                    function up(){ window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', up);}
+                    window.addEventListener('mousemove', move);
+                    window.addEventListener('mouseup', up);
+                    break;
+                }
+            }
         });
         previewDiv.appendChild(tempCanvas);
     }
 });
 
-// طباعة المعاينة
+// طباعة ما هو في المعاينة
 document.getElementById('printButton').addEventListener('click', () => {
-    window.print();
+    let previewContent = document.getElementById('preview').innerHTML;
+    let printWindow = window.open('', '', 'width=800,height=600');
+    printWindow.document.write('<html><head><title>الطباعة</title></head><body>');
+    printWindow.document.write(previewContent);
+    printWindow.document.write('</body></html>');
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
 });
 </script>
 
