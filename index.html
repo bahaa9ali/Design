@@ -1,306 +1,142 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>طباعة ملصقات بعدّاد أرقام – A4</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تعديل الصور بالأرقام</title>
 <style>
-  :root{
-    --cols: 3;           /* عدد الأعمدة في الصفحة */
-    --rows: 8;           /* عدد الصفوف في الصفحة (3×8 = 24 مثل الصورة) */
-    --gap-mm: 6;         /* المسافة بين الملصقات بالميليميتر */
-    --num-x: 50;         /* موضع الرقم أفقياً ٪ */
-    --num-y: 20;         /* موضع الرقم عمودياً ٪ */
-    --num-size: 26;      /* حجم خط الرقم px */
-    --num-color: #000;   /* لون الرقم */
-    --shadow-color: #000;/* لون الظل */
-    --shadow-blur: 3;    /* شدة الظل px */
-    --transition-time: 0.2s; /* وقت الانتقال للسلاسة */
-  }
-
-  *{box-sizing:border-box}
-  body{font-family:system-ui, "Amiri", Tahoma, Arial; background:#f2f4f8; margin:0; padding:16px; color:#222; line-height:1.5}
-  .app{max-width:1200px; margin:auto; background:#fff; border-radius:14px; box-shadow:0 8px 28px rgba(0,0,0,.09); padding:18px; transition:box-shadow var(--transition-time) ease}
-  h1{margin:0 0 12px; font-size:clamp(20px,3vw,28px); text-align:center}
-  .grid{display:grid; grid-template-columns: 320px 1fr; gap:16px}
-  @media (max-width: 900px){ .grid{grid-template-columns:1fr} }
-
-  .card{border:1px solid #e6e9ef; border-radius:12px; padding:14px; transition:border-color var(--transition-time) ease, box-shadow var(--transition-time) ease}
-  .card:hover{box-shadow:0 4px 12px rgba(0,0,0,.05); border-color:#dde2ea}
-  .card h2{font-size:18px; margin:0 0 10px; color:#333}
-  label{font-size:14px; color:#444; display:block; margin-bottom:4px}
-  input[type="number"], input[type="range"], input[type="color"], input[type="text"]{width:100%; padding:10px; margin:6px 0 12px; border:1px solid #dde2ea; border-radius:8px; transition:border-color var(--transition-time) ease}
-  input:focus{outline:none; border-color:#2575fc}
-  .row{display:grid; grid-template-columns: 1fr 1fr; gap:10px}
-  .actions{display:flex; flex-wrap:wrap; gap:10px; margin-top:8px; justify-content:center}
-  button{border:0; border-radius:999px; padding:12px 16px; cursor:pointer; font-weight:600; transition:transform var(--transition-time) ease, background var(--transition-time) ease}
-  button:hover{transform:scale(1.05)}
-  .btn-primary{background:linear-gradient(90deg,#6a11cb,#2575fc); color:#fff}
-  .btn-primary:hover{background:linear-gradient(90deg,#5a0fb0,#1f62d6)}
-  .btn-ghost{background:#f2f4f8; color:#333}
-  .btn-ghost:hover{background:#e6e9ef}
-  .btn-success{background:linear-gradient(90deg,#1aa34a,#31c26d); color:#fff}
-  .btn-success:hover{background:linear-gradient(90deg,#17913f,#2ba85f)}
-  .btn-danger{background:linear-gradient(90deg,#e74c3c,#c0392b); color:#fff}
-  .btn-danger:hover{background:linear-gradient(90deg,#d43f30,#ad3327)}
-
-  /* معاينة موضع الرقم فوق صورة القالب */
-  .template{position:relative; border:1px dashed #c7cfdb; border-radius:10px; overflow:hidden; background:#fafbff; transition:border-color var(--transition-time) ease}
-  .template:hover{border-color:#2575fc}
-  .template img{display:block; width:100%; height:auto; transition:opacity var(--transition-time) ease}
-  .tpl-number{position:absolute; left:var(--num-x,% 50); top:var(--num-y,% 20); transform:translate(-50%,-50%); font-weight:700; font-size:calc(var(--num-size, 26) * 1px); color:var(--num-color, #000); text-shadow: var(--shadow-blur, 3)px var(--shadow-blur, 3)px var(--shadow-blur, 3)px var(--shadow-color, #000); cursor:grab; user-select:none; z-index:3; transition:left var(--transition-time) ease, top var(--transition-time) ease, font-size var(--transition-time) ease, color var(--transition-time) ease, text-shadow var(--transition-time) ease}
-  .tpl-number:active{cursor:grabbing}
-
-  /* مساحة الطباعة */
-  .print-area{border:1px solid #e6e9ef; border-radius:12px; overflow:auto; background:#fff; padding:10px; transition:border-color var(--transition-time) ease}
-  .print-area:hover{border-color:#dde2ea}
-  .sheet{width:210mm; height:297mm; margin:auto; background:#fff; position:relative; page-break-after:always; border:1px solid #f0f2f6; transition:border-color var(--transition-time) ease}
-  .labels{display:grid; width:100%; height:100%;
-          grid-template-columns: repeat(var(--cols), 1fr);
-          grid-template-rows: repeat(var(--rows), 1fr);
-          gap: calc(var(--gap-mm) * 1mm); padding: calc(var(--gap-mm) * 1mm)}
-  .label{position:relative; border:1px solid #eaeef5; border-radius:6px; overflow:hidden; display:flex; align-items:center; justify-content:center; transition:border-color var(--transition-time) ease}
-  .label img{width:100%; height:100%; object-fit:contain; transition:opacity var(--transition-time) ease}
-  .label .num{position:absolute; left:calc(var(--num-x) * 1%); top:calc(var(--num-y) * 1%);
-              transform:translate(-50%,-50%); font-weight:700; font-size:calc(var(--num-size) * 1px);
-              color:var(--num-color); text-shadow: var(--shadow-blur)px var(--shadow-blur)px var(--shadow-blur)px var(--shadow-color); transition:left var(--transition-time) ease, top var(--transition-time) ease, font-size var(--transition-time) ease, color var(--transition-time) ease, text-shadow var(--transition-time) ease}
-
-  .hint{font-size:13px; color:#6b7280; margin-top:6px; text-align:center}
-
-  /* طباعة فعلية */
-  @page{ size: A4; margin: 6mm }
-  @media print{
-    body{background:#fff}
-    .no-print, .actions{display:none !important}
-    .app{box-shadow:none; padding:0}
-    .print-area{border:0; padding:0}
-    .sheet{border:0; margin:0; page-break-after:always}
-  }
+  body { font-family: 'Tahoma', sans-serif; display: flex; flex-direction: column; align-items: center; margin: 20px; }
+  canvas { border: 1px solid #ccc; margin-top: 10px; cursor: grab; }
+  .controls { margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap; }
+  input, select, button { padding: 5px; font-size: 16px; }
 </style>
 </head>
 <body>
-  <div class="app">
-    <h1>طباعة ملصقات بعدّاد أرقام (A4 3×8 مثل الصورة)</h1>
-    <div class="grid">
 
-      <!-- الإعدادات -->
-      <section class="card">
-        <h2>١) الصورة والموضع</h2>
-        <label for="file">اختر الصورة</label>
-        <input type="file" id="file" accept="image/*" />
-        <div class="template" id="template" style="aspect-ratio: 4/1">
-          <img id="tplImg" alt="معاينة الصورة" />
-          <div id="tplNumber" class="tpl-number">1</div>
-        </div>
-        <div class="row">
-          <div>
-            <label for="x">إزاحة أفقية (٪)</label>
-            <input type="range" id="x" min="0" max="100" value="50" />
-          </div>
-          <div>
-            <label for="y">إزاحة رأسية (٪)</label>
-            <input type="range" id="y" min="0" max="100" value="20" />
-          </div>
-        </div>
-        <div class="row">
-          <div>
-            <label for="size">حجم الرقم (px)</label>
-            <input type="range" id="size" min="12" max="80" value="26" />
-          </div>
-          <div>
-            <label for="color">لون الرقم</label>
-            <input type="color" id="color" value="#000000" />
-          </div>
-        </div>
-        <div class="row">
-          <div>
-            <label for="shadowColor">لون الظل</label>
-            <input type="color" id="shadowColor" value="#000000" />
-          </div>
-          <div>
-            <label for="shadowBlur">قيمة الظل (px)</label>
-            <input type="range" id="shadowBlur" min="0" max="10" value="3" />
-          </div>
-        </div>
-        <div class="hint">اسحب الرقم مباشرة فوق الصورة لتحديد مكانه، أو استخدم أشرطة التمرير.</div>
-        <hr style="margin:14px 0; border-color:#e6e9ef" />
-        <h2>٢) الكمية والتخطيط</h2>
-        <div class="row">
-          <div>
-            <label for="count">عدد الملصقات</label>
-            <input type="number" id="count" min="1" value="24" />
-          </div>
-          <div>
-            <label for="start">رقم البداية</label>
-            <input type="number" id="start" min="0" value="1" />
-          </div>
-        </div>
-        <div class="row">
-          <div>
-            <label for="cols">عدد الأعمدة في الصفحة</label>
-            <input type="number" id="cols" min="1" max="6" value="3" />
-          </div>
-          <div>
-            <label for="rows">عدد الصفوف في الصفحة</label>
-            <input type="number" id="rows" min="1" max="12" value="8" />
-          </div>
-        </div>
-        <label for="gap">المسافة بين الملصقات (مم)</label>
-        <input type="range" id="gap" min="0" max="15" value="6" />
+<h2>تطبيق تعديل الصور بالأرقام</h2>
 
-        <div class="actions">
-          <button id="make" class="btn-primary">معاينة الصفحة</button>
-          <button id="print" class="btn-success">طباعة</button>
-          <button id="reset" class="btn-danger">إعادة ضبط</button>
-        </div>
-      </section>
+<div class="controls">
+  <input type="file" id="imageInput" accept="image/*">
+  <input type="number" id="numberInput" placeholder="أدخل الرقم الأول" min="1" value="1">
+  <input type="color" id="colorInput" value="#ff0000">
+  <select id="fontSelect">
+    <option value="Meri">Meri</option>
+    <option value="Arial">Arial</option>
+    <option value="Tahoma">Tahoma</option>
+  </select>
+  <input type="number" id="fontSize" placeholder="حجم الخط" value="40">
+  <button id="addNumber">أضف الرقم</button>
+  <button id="exportPDF">حفظ/طباعة</button>
+</div>
 
-      <!-- المعاينة القابلة للطباعة -->
-      <section class="card print-area">
-        <h2>معاينة الطباعة</h2>
-        <div id="sheets"></div>
-        <div class="hint no-print">إذا زاد العدد عن سعة الصفحة (الأعمدة × الصفوف)، سينشأ البرنامج صفحات إضافية تلقائياً.</div>
-      </section>
-    </div>
-  </div>
+<canvas id="canvas" width="800" height="600"></canvas>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
-  // تعريف العناصر الرئيسية
-  const st = document.documentElement.style;
-  const file = document.getElementById('file');
-  const tplImg = document.getElementById('tplImg');
-  const template = document.getElementById('template');
-  const tplNumber = document.getElementById('tplNumber');
-  const x = document.getElementById('x');
-  const y = document.getElementById('y');
-  const size = document.getElementById('size');
-  const color = document.getElementById('color');
-  const shadowColor = document.getElementById('shadowColor');
-  const shadowBlur = document.getElementById('shadowBlur');
-  const count = document.getElementById('count');
-  const start = document.getElementById('start');
-  const cols = document.getElementById('cols');
-  const rows = document.getElementById('rows');
-  const gap = document.getElementById('gap');
-  const makeBtn = document.getElementById('make');
-  const printBtn = document.getElementById('print');
-  const resetBtn = document.getElementById('reset');
-  const sheets = document.getElementById('sheets');
+let canvas = document.getElementById('canvas');
+let ctx = canvas.getContext('2d');
+let img = new Image();
+let numbers = [];
+let selectedNumber = null;
+let offsetX, offsetY;
 
-  let imageData = '';
-  let dragging = false;
-  let startPos = {x:0,y:0};
-
-  // تحميل الصورة وتعيين نسبة الأبعاد
-  file.addEventListener('change', e => {
-    const f = e.target.files[0];
-    if(!f) return;
-    const reader = new FileReader();
-    reader.onload = ev => {
-      imageData = ev.target.result;
-      tplImg.src = imageData;
-      const tmp = new Image();
-      tmp.onload = () => {
-        const ar = (tmp.width / tmp.height) || 4/1;
-        template.style.aspectRatio = ar;
-      };
-      tmp.src = imageData;
-    };
-    reader.readAsDataURL(f);
-  });
-
-  // مزامنة المتغيرات الجذرية مع الإدخالات
-  function syncCSSVars(){
-    st.setProperty('--num-x', x.value);
-    st.setProperty('--num-y', y.value);
-    st.setProperty('--num-size', size.value);
-    st.setProperty('--num-color', color.value);
-    st.setProperty('--shadow-color', shadowColor.value);
-    st.setProperty('--shadow-blur', shadowBlur.value);
-    st.setProperty('--cols', Math.max(1, +cols.value));
-    st.setProperty('--rows', Math.max(1, +rows.value));
-    st.setProperty('--gap-mm', Math.max(0, +gap.value));
-    tplNumber.textContent = start.value || 1;
-  }
-  [x,y,size,color,shadowColor,shadowBlur,cols,rows,gap,start].forEach(el=>{
-    el.addEventListener('input', syncCSSVars);
-  });
-  syncCSSVars();
-
-  // وظيفة السحب للرقم داخل القالب
-  const pct = (val, total) => Math.max(0, Math.min(100, (val/total)*100));
-  template.addEventListener('pointerdown', e => {
-    if(!imageData) return;
-    dragging = true;
-    template.setPointerCapture(e.pointerId);
-    startPos = {x: e.clientX, y: e.clientY};
-    moveAt(e);
-  });
-  template.addEventListener('pointermove', e => { if(dragging) moveAt(e); });
-  template.addEventListener('pointerup', e => { dragging = false; template.releasePointerCapture(e.pointerId); });
-
-  function moveAt(e){
-    const rect = template.getBoundingClientRect();
-    const px = pct(e.clientX - rect.left, rect.width);
-    const py = pct(e.clientY - rect.top, rect.height);
-    x.value = Math.round(px);
-    y.value = Math.round(py);
-    syncCSSVars();
-  }
-
-  // بناء الصفحات للمعاينة أو الطباعة
-  function buildSheets(){
-    if(!imageData){
-      alert('الرجاء رفع صورة أولاً');
-      return;
+// تحميل الصورة
+document.getElementById('imageInput').addEventListener('change', e => {
+    const file = e.target.files[0];
+    if(file){
+        const reader = new FileReader();
+        reader.onload = event => {
+            img.src = event.target.result;
+            img.onload = () => draw();
+        }
+        reader.readAsDataURL(file);
     }
-    sheets.innerHTML = '';
-    const total = Math.max(1, +count.value);
-    const begin = +start.value || 1;
-    const perPage = (+cols.value) * (+rows.value);
-    const pages = Math.ceil(total / perPage);
+});
 
-    for(let p=0; p<pages; p++){
-      const sheet = document.createElement('div');
-      sheet.className = 'sheet';
-      sheet.style.setProperty('--cols', +cols.value);
-      sheet.style.setProperty('--rows', +rows.value);
-      sheet.style.setProperty('--gap-mm', +gap.value);
-      sheet.style.setProperty('--num-x', +x.value);
-      sheet.style.setProperty('--num-y', +y.value);
-      sheet.style.setProperty('--num-size', +size.value);
-      sheet.style.setProperty('--num-color', color.value);
-      sheet.style.setProperty('--shadow-color', shadowColor.value);
-      sheet.style.setProperty('--shadow-blur', +shadowBlur.value);
+// إضافة الرقم
+document.getElementById('addNumber').addEventListener('click', () => {
+    const num = parseInt(document.getElementById('numberInput').value);
+    const color = document.getElementById('colorInput').value;
+    const font = document.getElementById('fontSelect').value;
+    const size = parseInt(document.getElementById('fontSize').value);
+    numbers.push({num, x: 50, y: 50, color, font, size});
+    draw();
+});
 
-      const grid = document.createElement('div');
-      grid.className = 'labels';
+// رسم الصورة والأرقام
+function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    if(img.src) ctx.drawImage(img,0,0,canvas.width,canvas.height);
+    numbers.forEach(n => {
+        ctx.fillStyle = n.color;
+        ctx.font = `${n.size}px ${n.font}`;
+        ctx.fillText(n.num, n.x, n.y);
+    });
+}
 
-      for(let i=0; i<perPage; i++){
-        const index = p*perPage + i;
-        if(index >= total) break;
-        const n = begin + index;
-        const item = document.createElement('div');
-        item.className = 'label';
-        const img = document.createElement('img');
-        img.src = imageData;
-        img.alt = `ملصق رقم ${n}`;
-        const num = document.createElement('div');
-        num.className = 'num';
-        num.textContent = n;
-        item.appendChild(img);
-        item.appendChild(num);
-        grid.appendChild(item);
-      }
-      sheet.appendChild(grid);
-      sheets.appendChild(sheet);
+// سحب الرقم
+canvas.addEventListener('mousedown', e => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    selectedNumber = null;
+    for(let i = numbers.length-1;i>=0;i--){
+        let n = numbers[i];
+        ctx.font = `${n.size}px ${n.font}`;
+        let width = ctx.measureText(n.num).width;
+        let height = n.size;
+        if(mx >= n.x && mx <= n.x + width && my <= n.y && my >= n.y - height){
+            selectedNumber = n;
+            offsetX = mx - n.x;
+            offsetY = my - n.y;
+            break;
+        }
     }
-  }
+});
 
-  // ربط الأحداث بالأزرار
-  makeBtn.addEventListener('click', buildSheets);
-  printBtn.addEventListener('click', () => { buildSheets(); window.print(); });
-  resetBtn.addEventListener('click', () => { location.reload(); });
+canvas.addEventListener('mousemove', e => {
+    if(selectedNumber){
+        const rect = canvas.getBoundingClientRect();
+        selectedNumber.x = e.clientX - rect.left - offsetX;
+        selectedNumber.y = e.clientY - rect.top - offsetY;
+        draw();
+    }
+});
+
+canvas.addEventListener('mouseup', ()=> selectedNumber=null);
+canvas.addEventListener('mouseout', ()=> selectedNumber=null);
+
+// حفظ/طباعة PDF
+document.getElementById('exportPDF').addEventListener('click', () => {
+    let count = parseInt(prompt("أدخل العدد النهائي للأرقام:"));
+    if(isNaN(count) || count < 1) return alert("الرجاء إدخال عدد صحيح أكبر من 0");
+    const { jsPDF } = window.jspdf;
+    let pdf = new jsPDF({orientation: "landscape", unit:"px", format:"a4"});
+    const rowLimit = 3; // عدد الصور في الصف الواحد
+    let x = 10, y = 10, imgW = 250, imgH = 180;
+    for(let i=1;i<=count;i++){
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.drawImage(img,0,0,canvas.width,canvas.height);
+        numbers.forEach(n => {
+            ctx.fillStyle = n.color;
+            ctx.font = `${n.size}px ${n.font}`;
+            ctx.fillText(i, n.x, n.y); // كل صورة بالرقم الحالي
+        });
+        let dataURL = canvas.toDataURL("image/png");
+        pdf.addImage(dataURL,'PNG', x, y, imgW, imgH);
+        x += imgW + 10;
+        if(i % rowLimit === 0){
+            x = 10;
+            y += imgH + 10;
+            if(y + imgH > pdf.internal.pageSize.getHeight()){
+                pdf.addPage();
+                y = 10;
+            }
+        }
+    }
+    pdf.save("output.pdf");
+});
 </script>
+
 </body>
 </html>
