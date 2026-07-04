@@ -1,771 +1,765 @@
-<!DOCTYPE html>  
-<html lang="ar" dir="rtl">  
-<head>  
-    <meta charset="UTF-8">  
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
-    <title>تطبيق توليد شبكة الصور الاحترافي</title>  
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&family=Lateef&family=Tajawal:wght@400;700&display=swap" rel="stylesheet">  
-    <style>  
-        * {  
-            box-sizing: border-box;  
-            margin: 0;  
-            padding: 0;  
-            font-family: 'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;  
-        }  
-        body {  
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);  
-            color: #333;  
-            line-height: 1.6;  
-            padding: 20px;  
-            min-height: 100vh;  
-        }  
-        .container {  
-            max-width: 1500px;  
-            margin: 0 auto;  
-            background: rgba(255, 255, 255, 0.98);  
-            border-radius: 15px;  
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);  
-            padding: 25px;  
-            overflow: hidden;  
-        }  
-        header {  
-            text-align: center;  
-            margin-bottom: 25px;  
-            padding-bottom: 15px;  
-            border-bottom: 2px solid #eee;  
-        }  
-        h1 {  
-            font-size: 36px;  
-            color: #2c3e50;  
-            margin-bottom: 5px;  
-        }  
-        .app-description {  
-            font-size: 16px;  
-            color: #7f8c8d;  
-        }  
-        .app-content {  
-            display: flex;  
-            flex-wrap: wrap;  
-            gap: 25px;  
-        }  
-        .control-panel {  
-            flex: 1;  
-            min-width: 350px;  
-            background: #f8f9fa;  
-            padding: 20px;  
-            border-radius: 12px;  
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);  
-            max-height: 85vh;  
-            overflow-y: auto;  
-        }  
-        .control-panel h2 {  
-            margin-bottom: 15px;  
-            color: #34495e;  
-            text-align: center;  
-            padding-bottom: 8px;  
-            border-bottom: 3px solid #3498db;  
-            font-size: 22px;  
-        }  
-        .control-panel h3 {  
-            margin: 20px 0 10px;  
-            color: #2c3e50;  
-            padding-bottom: 5px;  
-            border-bottom: 1px solid #ddd;  
-            font-size: 18px;  
-        }  
-        .form-group {  
-            margin-bottom: 15px;  
-            padding: 12px;  
-            background: white;  
-            border-radius: 8px;  
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);  
-        }  
-        .form-group label {  
-            display: block;  
-            margin-bottom: 6px;  
-            font-weight: 600;  
-            color: #2c3e50;  
-            font-size: 14px;  
-        }  
-        .form-group input, .form-group select, .form-group textarea {  
-            width: 100%;  
-            padding: 10px;  
-            border: 1px solid #ddd;  
-            border-radius: 6px;  
-            font-size: 14px;  
-            background-color: #fff;  
-        }  
-        .form-group textarea {  
-            resize: vertical;  
-            height: 60px;  
-        }  
-        .checkbox-group {  
-            display: flex;  
-            align-items: center;  
-            gap: 10px;  
-        }  
-        .checkbox-group input {  
-            width: auto;  
-        }  
-        .slider-container {  
-            display: flex;  
-            align-items: center;  
-            gap: 12px;  
-            margin-top: 5px;  
-        }  
-        .slider-container input[type="range"] {  
-            flex: 1;  
-            height: 6px;  
-            background: #ddd;  
-            border-radius: 5px;  
-            outline: none;  
-        }  
-        .slider-value {  
-            min-width: 55px;  
-            text-align: center;  
-            background: #3498db;  
-            color: white;  
-            padding: 3px 8px;  
-            border-radius: 15px;  
-            font-weight: bold;  
-            font-size: 12px;  
-        }  
-        .color-picker {  
-            display: flex;  
-            align-items: center;  
-            gap: 12px;  
-        }  
-        .color-picker input[type="color"] {  
-            width: 50px;  
-            height: 35px;  
-            padding: 0;  
-            border: none;  
-            cursor: pointer;  
-        }  
-        .grid-config {  
-            display: flex;  
-            gap: 10px;  
-        }  
-        .grid-config .form-group {  
-            flex: 1;  
-        }  
-        .upload-section {  
-            background: #e8f4fc;  
-            padding: 15px;  
-            border-radius: 8px;  
-            text-align: center;  
-            margin-bottom: 15px;  
-            border: 2px dashed #3498db;  
-        }  
-        .upload-btn {  
-            background: #3498db;  
-            color: white;  
-            padding: 10px 20px;  
-            border: none;  
-            border-radius: 6px;  
-            cursor: pointer;  
-            font-size: 16px;  
-            margin-bottom: 8px;  
-            width: 100%;  
-            font-weight: bold;  
-        }  
-        .preview-section {  
-            flex: 2;  
-            min-width: 500px;  
-            text-align: center;  
-        }  
-        .preview-section h2 {  
-            margin-bottom: 15px;  
-            color: #34495e;  
-            padding-bottom: 8px;  
-            border-bottom: 3px solid #3498db;  
-            font-size: 22px;  
-        }  
-        .preview-container {  
-            width: 100%;  
-            background: #eef2f3;  
-            padding: 20px;  
-            overflow: auto;  
-            border-radius: 10px;  
-            max-height: 650px;  
-            margin-bottom: 15px;  
-            display: flex;  
-            justify-content: center;  
-            align-items: flex-start;  
-        }  
-        .image-grid {  
-            display: grid;  
-            margin: 0 auto;  
-            width: fit-content;  
-        }  
-        .grid-cell {  
-            position: relative;  
-            display: flex;  
-            align-items: center;  
-            justify-content: center;  
-            overflow: hidden;  
-            background: #f9f9f9;  
-            box-sizing: border-box;  
-        }  
-        .grid-cell img {  
-            position: absolute;  
-            pointer-events: none;  
-        }  
-        .number-overlay {  
-            position: absolute;  
-            z-index: 10;  
-            pointer-events: none;  
-            line-height: 1;  
-            white-space: nowrap;  
-        }  
-        .action-buttons {  
-            margin-top: 20px;  
-            display: flex;  
-            justify-content: center;  
-            gap: 15px;  
-        }  
-        .action-btn {  
-            padding: 12px 30px;  
-            border: none;  
-            border-radius: 6px;  
-            cursor: pointer;  
-            font-size: 16px;  
-            font-weight: bold;  
-            transition: all 0.2s;  
-        }  
-        .print-btn { background: #27ae60; color: white; }  
-        .print-btn:hover { background: #219653; }  
-        .save-btn { background: #9b59b6; color: white; }  
-        .save-btn:hover { background: #8e44ad; }  
-        .reset-btn { background: #e74c3c; color: white; }  
-        .reset-btn:hover { background: #c0392b; }  
-        
-        .a4-preview-container {  
-            width: 100%;  
-            background: #eef2f3;  
-            padding: 20px;  
-            overflow: auto;  
-            border-radius: 10px;  
-            margin-bottom: 15px;  
-            display: none;  
-            justify-content: center;  
-        }  
-        .a4-page {  
-            width: 794px;  
-            height: 1123px;  
-            background: white;  
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);  
-            padding: 40px;  
-            margin: 0 auto;  
-            box-sizing: border-box;  
-        }  
-        .a4-grid {  
-            display: grid;  
-            width: 100%;  
-            height: 100%;  
-        }  
-        .preview-toggle {  
-            display: flex;  
-            justify-content: center;  
-            margin-bottom: 15px;  
-            gap: 10px;  
-        }  
-        .toggle-btn {  
-            padding: 8px 20px;  
-            background: #ddd;  
-            border: none;  
-            border-radius: 5px;  
-            cursor: pointer;  
-            font-weight: bold;  
-        }  
-        .toggle-btn.active {  
-            background: #3498db;  
-            color: white;  
-        }  
-        .hidden { display: none; }  
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تطبيق توليد شبكة الصور الاحترافي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&family=Lateef&family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1500px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            padding: 25px;
+            overflow: hidden;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee;
+        }
+        h1 {
+            font-size: 36px;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        .app-description {
+            font-size: 16px;
+            color: #7f8c8d;
+        }
+        .app-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+        }
+        .control-panel {
+            flex: 1;
+            min-width: 350px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+        .control-panel h2 {
+            margin-bottom: 15px;
+            color: #34495e;
+            text-align: center;
+            padding-bottom: 8px;
+            border-bottom: 3px solid #3498db;
+            font-size: 22px;
+        }
+        .control-panel h3 {
+            margin: 20px 0 10px;
+            color: #2c3e50;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #ddd;
+            font-size: 18px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            padding: 12px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 14px;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            background-color: #fff;
+        }
+        .form-group textarea {
+            resize: vertical;
+            height: 60px;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .checkbox-group input {
+            width: auto;
+        }
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 5px;
+        }
+        .slider-container input[type="range"] {
+            flex: 1;
+            height: 6px;
+            background: #ddd;
+            border-radius: 5px;
+            outline: none;
+        }
+        .slider-value {
+            min-width: 55px;
+            text-align: center;
+            background: #3498db;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        .color-picker {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .color-picker input[type="color"] {
+            width: 50px;
+            height: 35px;
+            padding: 0;
+            border: none;
+            cursor: pointer;
+        }
+        .grid-config {
+            display: flex;
+            gap: 10px;
+        }
+        .grid-config .form-group {
+            flex: 1;
+        }
+        .upload-section {
+            background: #e8f4fc;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 15px;
+            border: 2px dashed #3498db;
+        }
+        .upload-btn {
+            background: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-bottom: 8px;
+            width: 100%;
+            font-weight: bold;
+        }
+        .preview-section {
+            flex: 2;
+            min-width: 500px;
+            text-align: center;
+        }
+        .preview-section h2 {
+            margin-bottom: 15px;
+            color: #34495e;
+            padding-bottom: 8px;
+            border-bottom: 3px solid #3498db;
+            font-size: 22px;
+        }
+        .preview-container {
+            width: 100%;
+            background: #eef2f3;
+            padding: 20px;
+            overflow: auto;
+            border-radius: 10px;
+            max-height: 650px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        .image-grid {
+            display: grid;
+            margin: 0 auto;
+            width: fit-content;
+        }
+        .grid-cell {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: #f9f9f9;
+            box-sizing: border-box;
+        }
+        .grid-cell img {
+            position: absolute;
+            pointer-events: none;
+        }
+        .number-overlay {
+            position: absolute;
+            z-index: 10;
+            pointer-events: none;
+            line-height: 1;
+            white-space: nowrap;
+        }
+        .action-buttons {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        .action-btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .print-btn {
+            background: #27ae60;
+            color: white;
+        }
+        .print-btn:hover {
+            background: #219653;
+        }
+        .save-btn {
+            background: #9b59b6;
+            color: white;
+        }
+        .save-btn:hover {
+            background: #8e44ad;
+        }
+        .reset-btn {
+            background: #e74c3c;
+            color: white;
+        }
+        .reset-btn:hover {
+            background: #c0392b;
+        }
+        .a4-preview-container {
+            width: 100%;
+            background: #eef2f3;
+            padding: 20px;
+            overflow: auto;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: none;
+            justify-content: center;
+        }
+        .a4-page {
+            width: 794px;
+            height: 1123px;
+            background: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            margin: 0 auto;
+            box-sizing: border-box;
+        }
+        .a4-grid {
+            display: grid;
+            width: 100%;
+            height: 100%;
+        }
+        .preview-toggle {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 15px;
+            gap: 10px;
+        }
+        .toggle-btn {
+            padding: 8px 20px;
+            background: #ddd;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .toggle-btn.active {
+            background: #3498db;
+            color: white;
+        }
+        .hidden {
+            display: none;
+        }
 
-        @media (max-width: 1100px) {  
-            .app-content { flex-direction: column; }  
-            .preview-section { width: 100%; }  
-        }  
-          
-        @media print {  
-            body, html { background: white !important; padding: 0; margin: 0; }  
-            .container, .control-panel, header, .preview-toggle, .action-buttons, .preview-container, .a4-preview-container {  
-                display: none !important;  
-            }  
-            #printVersion {  
-                display: block !important;  
-                width: 100% !important;  
-            }  
-            .print-page {  
-                width: 210mm;  
-                height: 296mm;  
-                page-break-after: always;  
-                break-after: page;  
-                padding: 10mm;  
-                box-sizing: border-box;  
-                background: white;  
-                margin: 0 auto;  
-            }  
-            .print-grid {  
-                display: grid;  
-                width: 100% !important;  
-                height: 100% !important;  
-            }  
-            .print-cell {  
-                position: relative;  
-                display: flex;  
-                align-items: center;  
-                justify-content: center;  
-                overflow: hidden;  
-                box-sizing: border-box;  
-            }  
-            .print-cell img {  
-                position: absolute;  
-            }  
-            .print-number {  
-                position: absolute;  
-                z-index: 10;  
-                line-height: 1;  
-                white-space: nowrap;  
-            }  
-        }  
-        #printVersion { display: none; }  
-    </style>  
-</head>  
-<body>  
-<div class="container">  
-    <header>  
-        <h1>تطبيق توليد شبكة الصور الاحترافي</h1>  
-        <p class="app-description">صمم شبكتك، تحكم بالكامل بالصور والأرقام واطبعها بدقة عالية</p>  
-    </header>  
-    
-    <main class="app-content">  
-        <section class="control-panel">  
-            <h2>لوحة التحكم</h2>  
-              
-            <div class="upload-section">  
-                <input type="file" id="imageUpload" accept="image/*" class="hidden">  
-                <button class="upload-btn" id="uploadTrigger">اختر صورة للشبكة</button>  
-                <p style="font-size:12px; color:#666;">أو اسحب وأفلت الصورة هنا</p>  
-            </div>  
-              
-            <h3>إعدادات الشبكة</h3>  
-            <div class="grid-config">  
-                <div class="form-group">  
-                    <label for="columns">الأعمدة:</label>  
-                    <input type="number" id="columns" min="1" max="20" value="3">  
-                </div>  
-                <div class="form-group">  
-                    <label for="rows">الصفوف:</label>  
-                    <input type="number" id="rows" min="1" max="20" value="3">  
-                </div>  
-            </div>  
-
-            <div class="form-group">  
-                <label for="numberMode">نظام الأرقام:</label>  
-                <select id="numberMode">
-                    <option value="sequence">تسلسلي تلقائي</option>
-                    <option value="custom">أرقام مخصصة (يدوي)</option>
-                </select>
-            </div>
-
-            <div class="form-group" id="sequenceGroup">  
-                <label for="totalNumbers">إجمالي عدد الأرقام:</label>  
-                <input type="number" id="totalNumbers" min="1" max="400" value="9">  
-            </div>  
-
-            <div class="form-group hidden" id="customGroup">  
-                <label for="customNumbers">أدخل الأرقام متبوعة بفاصلة (,):</label>  
-                <textarea id="customNumbers" placeholder="مثال: 101, 204, 500, 77"></textarea>  
-            </div>  
-              
-            <div class="grid-config">
-                <div class="form-group">  
-                    <label>عرض الخلية:</label>  
-                    <div class="slider-container">  
-                        <input type="range" id="cellWidth" min="50" max="500" value="180">  
-                        <span class="slider-value" id="cellWidthValue">180px</span>  
-                    </div>  
-                </div>  
-                <div class="form-group">  
-                    <label>ارتفاع الخلية:</label>  
-                    <div class="slider-container">  
-                        <input type="range" id="cellHeight" min="50" max="500" value="180">  
-                        <span class="slider-value" id="cellHeightValue">180px</span>  
-                    </div>  
-                </div>  
-            </div>
-
-            <div class="grid-config">
-                <div class="form-group">  
-                    <label>المسافة الأفقية:</label>  
-                    <div class="slider-container">  
-                        <input type="range" id="horizontalGap" min="0" max="50" value="10">  
-                        <span class="slider-value" id="horizontalGapValue">10px</span>  
-                    </div>  
-                </div>  
-                <div class="form-group">  
-                    <label>المسافة العمودية:</label>  
-                    <div class="slider-container">  
-                        <input type="range" id="verticalGap" min="0" max="50" value="10">  
-                        <span class="slider-value" id="verticalGapValue">10px</span>  
-                    </div>  
-                </div>  
-            </div>
-
-            <div class="grid-config">
-                <div class="form-group">  
-                    <label>سمك الإطار:</label>  
-                    <div class="slider-container">  
-                        <input type="range" id="borderWidth" min="0" max="10" value="1">  
-                        <span class="slider-value" id="borderWidthValue">1px</span>  
-                    </div>  
-                </div>  
-                <div class="form-group">  
-                    <label>لون الإطار:</label>  
-                    <div class="color-picker">  
-                        <input type="color" id="borderColor" value="#dddddd">  
-                    </div>  
-                </div>  
-            </div>
-              
-            <div class="form-group" id="startNumberContainer">  
-                <label for="startNumber">الرقم البدائي للشبكة التلقائية:</label>  
-                <input type="number" id="startNumber" min="1" max="1000" value="1">  
-            </div>  
-              
-            <h3>إعدادات التحكم بالصورة</h3>  
-            <div class="form-group">  
-                <label for="imageFit">طريقة احتواء الصورة:</label>  
-                <select id="imageFit">
-                    <option value="cover">تغطية كاملة (Cover)</option>
-                    <option value="contain">احتواء كامل (Contain)</option>
-                    <option value="fill">تمطيط (Stretch)</option>
-                </select>
-            </div>
-            <div class="form-group">  
-                <label>مقياس حجم الصورة (Zoom):</label>  
-                <div class="slider-container">  
-                    <input type="range" id="imageScale" min="50" max="300" value="100">  
-                    <span class="slider-value" id="imageScaleValue">100%</span>  
-                </div>  
-            </div>  
-            <div class="grid-config">
-                <div class="form-group">  
-                    <label>تحريك أفقي (X):</label>  
-                    <div class="slider-container">  
-                        <input type="range" id="imgMoveX" min="-100" max="100" value="0">  
-                        <span class="slider-value" id="imgMoveXValue">0px</span>  
-                    </div>  
-                </div>  
-                <div class="form-group">  
-                    <label>تحريك عمودي (Y):</label>  
-                    <div class="slider-container">  
-                        <input type="range" id="imgMoveY" min="-100" max="100" value="0">  
-                        <span class="slider-value" id="imgMoveYValue">0px</span>  
-                    </div>  
-                </div>  
-            </div>
-            <div class="form-group">  
-                <label>تدوير الصورة:</label>  
-                <div class="slider-container">  
-                    <input type="range" id="imageRotate" min="0" max="360" value="0">  
-                    <span class="slider-value" id="imageRotateValue">0°</span>  
-                </div>  
-            </div>  
-
-            <h3>تخصيص الأرقام والخطوط</h3>  
-            <div class="form-group">  
-                <label for="langMode">لغة ونوع الأرقام:</label>  
-                <select id="langMode">
-                    <option value="ar">عربي (١، ٢، ٣)</option>
-                    <option value="en">إنجليزي (1, 2, 3)</option>
-                    <option value="hi">هندي/فارسي (۱، ۲، ۳)</option>
-                </select>
-            </div>
-            <div class="form-group">  
-                <label for="fontFamily">نوع الخط:</label>  
-                <select id="fontFamily">
-                    <option value="'Cairo'">Cairo</option>
-                    <option value="'Lateef'">Lateef (رقعي/نسخي)</option>
-                    <option value="'Tajawal'">Tajawal</option>
-                    <option value="sans-serif">Segoe UI</option>
-                </select>
-            </div>
-            <div class="grid-config">
-                <div class="form-group">  
-                    <label for="numberColor">لون الرقم:</label>  
-                    <div class="color-picker">  
-                        <input type="color" id="numberColor" value="#e74c3c">  
-                    </div>  
-                </div>  
-                <div class="form-group checkbox-group" style="justify-content: center; margin-top: 20px;">  
-                    <input type="checkbox" id="fontWeightBold" checked>  
-                    <label for="fontWeightBold">خط عريض (Bold)</label>  
-                </div>  
-            </div>
-            <div class="grid-config">
-                <div class="form-group checkbox-group" style="margin-top: 20px;">  
-                    <input type="checkbox" id="useShadow">  
-                    <label for="useShadow">تفعيل ظل الرقم</label>  
-                </div>  
-                <div class="form-group">  
-                    <label for="shadowColor">لون الظل:</label>  
-                    <div class="color-picker">  
-                        <input type="color" id="shadowColor" value="#000000">  
-                    </div>  
-                </div>  
-            </div>
-            <div class="form-group">  
-                <label>حجم الرقم:</label>  
-                <div class="slider-container">  
-                    <input type="range" id="numberSize" min="10" max="200" value="60">  
-                    <span class="slider-value" id="numberSizeValue">60px</span>  
-                </div>  
-            </div>  
-            <div class="grid-config">
-                <div class="form-group">  
-                    <label>موضع أفقي للأرقام (%):</label>  
-                    <div class="slider-container">  
-                        <input type="range" id="positionX" min="0" max="100" value="50">  
-                        <span class="slider-value" id="positionXValue">50%</span>  
-                    </div>  
-                </div>  
-                <div class="form-group">  
-                    <label>موضع عمودي للأرقام (%):</label>  
-                    <div class="slider-container">  
-                        <input type="range" id="positionY" min="0" max="100" value="50">  
-                        <span class="slider-value" id="positionYValue">50%</span>  
-                    </div>  
-                </div>  
-            </div>  
-        </section>  
-          
-        <section class="preview-section">  
-            <h2>معاينة الشبكة</h2>  
-              
-            <div class="preview-toggle">  
-                <button class="toggle-btn active" id="normalPreviewBtn">المعاينة الحرة</button>  
-                <button class="toggle-btn" id="a4PreviewBtn">معاينة صفحة الطباعة (A4)</button>  
-            </div>  
-              
-            <div class="preview-container" id="normalPreview">  
-                <div class="image-grid" id="gridContainer"></div>  
-            </div>  
-              
-            <div class="a4-preview-container" id="a4Preview">  
-                <div class="a4-page">  
-                    <div class="a4-grid" id="a4GridContainer"></div>  
-                </div>  
-            </div>  
-              
-            <div class="action-buttons">  
-                <button class="action-btn print-btn" id="printBtn">🖨️ طباعة وتصدير</button>  
-                <button class="action-btn save-btn" id="saveBtn">💾 حفظ التنسيقات</button>  
-                <button class="action-btn reset-btn" id="resetBtn">🔄 بدء جديد</button>  
-            </div>  
-        </section>  
-    </main>  
-</div>  
-
-<div id="printVersion" class="print-version"></div>  
-
-<script>  
-    document.addEventListener('DOMContentLoaded', function() {  
-        const inputs = [
-            'imageUpload', 'startNumber', 'totalNumbers', 'numberColor', 'numberSize',
-            'positionX', 'positionY', 'columns', 'rows', 'cellWidth', 'cellHeight',
-            'horizontalGap', 'verticalGap', 'numberMode', 'customNumbers', 'imageFit',
-            'imageScale', 'imgMoveX', 'imgMoveY', 'imageRotate', 'langMode', 'fontFamily',
-            'fontWeightBold', 'useShadow', 'shadowColor', 'borderWidth', 'borderColor'
-        ];
-        
-        const dom = {};
-        inputs.forEach(id => dom[id] = document.getElementById(id));
-        
-        const gridContainer = document.getElementById('gridContainer');  
-        const a4GridContainer = document.getElementById('a4GridContainer');  
-        const printVersion = document.getElementById('printVersion');  
-        const normalPreview = document.getElementById('normalPreview');  
-        const a4Preview = document.getElementById('a4Preview');  
-        
-        let currentImage = null;  
-        let isA4Preview = false;  
-
-        const numSystems = {
-            ar: ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'],
-            en: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
-            hi: ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹']
-        };
-
-        function convertNumbers(num, lang) {  
-            return num.toString().replace(/\d/g, d => numSystems[lang][d]);  
-        }  
-
-        function getNumbersList() {
-            const list = [];
-            const mode = dom.numberMode.value;
-            const lang = dom.langMode.value;
-
-            if (mode === 'sequence') {
-                const total = parseInt(dom.totalNumbers.value) || 1;
-                const start = parseInt(dom.startNumber.value) || 1;
-                for (let i = 0; i < total; i++) {
-                    list.push(convertNumbers(start + i, lang));
-                }
-            } else {
-                const raw = dom.customNumbers.value.split(',');
-                raw.forEach(n => {
-                    if(n.trim() !== "") list.push(convertNumbers(n.trim(), lang));
-                });
-                if(list.length === 0) list.push(convertNumbers(1, lang));
+        @media (max-width: 1100px) {
+            .app-content {
+                flex-direction: column;
             }
-            return list;
-        }
-
-        function updateSliderLabels() {
-            document.getElementById('cellWidthValue').textContent = dom.cellWidth.value + 'px';
-            document.getElementById('cellHeightValue').textContent = dom.cellHeight.value + 'px';
-            document.getElementById('horizontalGapValue').textContent = dom.horizontalGap.value + 'px';
-            document.getElementById('verticalGapValue').textContent = dom.verticalGap.value + 'px';
-            document.getElementById('imageScaleValue').textContent = dom.imageScale.value + '%';
-            document.getElementById('imgMoveXValue').textContent = dom.imgMoveX.value + 'px';
-            document.getElementById('imgMoveYValue').textContent = dom.imgMoveY.value + 'px';
-            document.getElementById('imageRotateValue').textContent = dom.imageRotate.value + '°';
-            document.getElementById('numberSizeValue').textContent = dom.numberSize.value + 'px';
-            document.getElementById('positionXValue').textContent = dom.positionX.value + '%';
-            document.getElementById('positionYValue').textContent = dom.positionY.value + '%';
-            document.getElementById('borderWidthValue').textContent = dom.borderWidth.value + 'px';
-        }
-
-        function configureCellImage(img) {
-            if (!currentImage) return;
-            img.src = currentImage;
-            img.style.width = dom.imageFit.value === 'fill' ? '100%' : (dom.imageFit.value === 'contain' ? '100%' : 'auto');
-            img.style.height = dom.imageFit.value === 'fill' ? '100%' : (dom.imageFit.value === 'contain' ? '100%' : 'auto');
-            img.style.objectFit = dom.imageFit.value;
-            
-            const scale = dom.imageScale.value / 100;
-            const rotate = dom.imageRotate.value;
-            const moveX = dom.imgMoveX.value;
-            const moveY = dom.imgMoveY.value;
-            
-            img.style.transform = `translate(${moveX}px, ${moveY}px) scale(${scale}) rotate(${rotate}deg)`;
-        }
-
-        function configureCellNumber(numEl) {
-            numEl.style.color = dom.numberColor.value;
-            numEl.style.fontSize = dom.numberSize.value + 'px';
-            numEl.style.fontFamily = dom.fontFamily.value;
-            numEl.style.fontWeight = dom.fontWeightBold.checked ? 'bold' : 'normal';
-            numEl.style.left = dom.positionX.value + '%';
-            numEl.style.top = dom.positionY.value + '%';
-            numEl.style.transform = 'translate(-50%, -50%)';
-
-            if (dom.useShadow.checked) {
-                numEl.style.textShadow = `2px 2px 5px ${dom.shadowColor.value}`;
-            } else {
-                numEl.style.textShadow = 'none';
+            .preview-section {
+                width: 100%;
             }
         }
 
-        function render() {
-            updateSliderLabels();
-            const numbers = getNumbersList();
-            const cols = parseInt(dom.columns.value) || 3;
-            
-            gridContainer.innerHTML = '';
-            gridContainer.style.gridTemplateColumns = `repeat(${cols}, ${dom.cellWidth.value}px)`;
-            gridContainer.style.gap = `${dom.verticalGap.value}px ${dom.horizontalGap.value}px`;
-
-            numbers.forEach(num => {
-                const cell = document.createElement('div');
-                cell.className = 'grid-cell';
-                cell.style.width = dom.cellWidth.value + 'px';
-                cell.style.height = dom.cellHeight.value + 'px';
-                cell.style.border = `${dom.borderWidth.value}px solid ${dom.borderColor.value}`;
-
-                if (currentImage) {
-                    const img = document.createElement('img');
-                    configureCellImage(img);
-                    cell.appendChild(img);
-                }
-
-                const label = document.createElement('div');
-                label.className = 'number-overlay';
-                label.textContent = num;
-                configureCellNumber(label);
-                
-                cell.appendChild(label);
-                gridContainer.appendChild(cell);
-            });
-
-            a4GridContainer.innerHTML = '';
-            const cellsPerRow = Math.floor(714 / (parseInt(dom.cellWidth.value) + parseInt(dom.horizontalGap.value))) || 1;
-            const cellsPerCol = Math.floor(1043 / (parseInt(dom.cellHeight.value) + parseInt(dom.verticalGap.value))) || 1;
-            
-            a4GridContainer.style.gridTemplateColumns = `repeat(${cellsPerRow}, ${dom.cellWidth.value}px)`;
-            a4GridContainer.style.gap = `${dom.verticalGap.value}px ${dom.horizontalGap.value}px`;
-
-            const maxA4Cells = Math.min(numbers.length, cellsPerRow * cellsPerCol);
-            for(let i=0; i<maxA4Cells; i++) {
-                const cell = document.createElement('div');
-                cell.className = 'grid-cell';
-                cell.style.width = dom.cellWidth.value + 'px';
-                cell.style.height = dom.cellHeight.value + 'px';
-                cell.style.border = `${dom.borderWidth.value}px solid ${dom.borderColor.value}`;
-
-                if (currentImage) {
-                    const img = document.createElement('img');
-                    configureCellImage(img);
-                    cell.appendChild(img);
-                }
-
-                const label = document.createElement('div');
-                label.className = 'number-overlay';
-                label.textContent = numbers[i];
-                configureCellNumber(label);
-
-                cell.appendChild(label);
-                a4GridContainer.appendChild(cell);
+        @media print {
+            body,
+            html {
+                background: white !important;
+                padding: 0;
+                margin: 0;
+            }
+            .container,
+            .control-panel,
+            header,
+            .preview-toggle,
+            .action-buttons,
+            .preview-container,
+            .a4-preview-container {
+                display: none !important;
+            }
+            #printVersion {
+                display: block !important;
+                width: 100% !important;
+            }
+            .print-page {
+                width: 210mm;
+                height: 296mm;
+                page-break-after: always;
+                break-after: page;
+                padding: 10mm;
+                box-sizing: border-box;
+                background: white;
+                margin: 0 auto;
+            }
+            .print-grid {
+                display: grid;
+                width: 100% !important;
+                height: 100% !important;
+            }
+            .print-cell {
+                position: relative;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                overflow: hidden;
+                box-sizing: border-box;
+            }
+            .print-cell img {
+                position: absolute;
+            }
+            .print-number {
+                position: absolute;
+                z-index: 10;
+                line-height: 1;
+                white-space: nowrap;
             }
         }
+        #printVersion {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>تطبيق توليد شبكة الصور الاحترافي</h1>
+            <p class="app-description">صمم شبكتك، تحكم بالكامل بالصور والأرقام واطبعها بدقة عالية</p>
+        </header>
+        <main class="app-content">
+            <section class="control-panel">
+                <h2>لوحة التحكم</h2>
 
-        function buildPrintPages() {
-            printVersion.innerHTML = '';
-            const numbers = getNumbersList();
-            
-            const cellW = parseInt(dom.cellWidth.value);
-            const cellH = parseInt(dom.cellHeight.value);
-            const gapH = parseInt(dom.horizontalGap.value);
-            const gapV = parseInt(dom.verticalGap.value);
+                <div class="upload-section">
+                    <input type="file" id="imageUpload" accept="image/*" class="hidden">
+                    <button class="upload-btn" id="uploadTrigger">اختر صورة للشبكة</button>
+                    <p style="font-size:12px; color:#666;">أو اسحب وأفلت الصورة هنا</p>
+                </div>
 
-            const maxW = 714; 
-            const maxH = 1043;
+                <h3>إعدادات الشبكة</h3>
+                <div class="grid-config">
+                    <div class="form-group">
+                        <label for="columns">الأعمدة:</label>
+                        <input type="number" id="columns" min="1" max="20" value="3">
+                    </div>
+                    <div class="form-group">
+                        <label for="rows">الصفوف:</label>
+                        <input type="number" id="rows" min="1" max="20" value="3">
+                    </div>
+                </div>
 
-            const cellsPerRow = Math.floor(maxW / (cellW + gapH)) || 1;
-            const cellsPerCol = Math.floor(maxH / (cellH + gapV)) || 1;
-            const cellsPerPage = cellsPerRow * cellsPerCol;
+                <div class="form-group">
+                    <label for="numberMode">نظام الأرقام:</label>
+                    <select id="numberMode">
+                        <option value="sequence">تسلسلي تلقائي</option>
+                        <option value="custom">أرقام مخصصة (يدوي)</option>
+                    </select>
+                </div>
 
-            const totalPages = Math.ceil(numbers.length / cellsPerPage);
+                <div class="form-group" id="sequenceGroup">
+                    <label for="totalNumbers">إجمالي عدد الأرقام:</label>
+                    <input type="number" id="totalNumbers" min="1" max="400" value="9">
+                </div>
 
-            for (let page = 0; page < totalPages; page++) {
-                const pageDiv = document.createElement('div');
-                pageDiv.className = 'print-page';
+                <div class="form-group hidden" id="customGroup">
+                    <label for="customNumbers">أدخل الأرقام متبوعة بفاصلة (,):</label>
+                    <textarea id="customNumbers" placeholder="مثال: 101, 204, 500, 77"></textarea>
+                </div>
 
-                const gridDiv = document.createElement('div');
-                gridDiv.className = 'print-grid';
-                gridDiv.style.gridTemplateColumns = `repeat(${cellsPerRow}, ${cellW}px)`;
-                gridDiv.style.gap = `${gapV}px ${gapH}px`;
+                <div class="grid-config">
+                    <div class="form-group">
+                        <label>عرض الخلية:</label>
+                        <div class="slider-container">
+                            <input type="range" id="cellWidth" min="50" max="500" value="180">
+                            <span class="slider-value" id="cellWidthValue">180px</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>ارتفاع الخلية:</label>
+                        <div class="slider-container">
+                            <input type="range" id="cellHeight" min="50" max="500" value="180">
+                            <span class="slider-value" id="cellHeightValue">180px</span>
+                        </div>
+                    </div>
+                </div>
 
-                const startIdx = page * cellsPerPage;
-                const endIdx = Math.min(startIdx + cellsPerPage, numbers.length);
+                <div class="grid-config">
+                    <div class="form-group">
+                        <label>المسافة الأفقية:</label>
+                        <div class="slider-container">
+                            <input type="range" id="horizontalGap" min="0" max="50" value="10">
+                            <span class="slider-value" id="horizontalGapValue">10px</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>المسافة العمودية:</label>
+                        <div class="slider-container">
+                            <input type="range" id="verticalGap" min="0" max="50" value="10">
+                            <span class="slider-value" id="verticalGapValue">10px</span>
+                        </div>
+                    </div>
+                </div>
 
-                for (let i = startIdx; i < endIdx; i++) {
+                <div class="grid-config">
+                    <div class="form-group">
+                        <label>سمك الإطار:</label>
+                        <div class="slider-container">
+                            <input type="range" id="borderWidth" min="0" max="10" value="1">
+                            <span class="slider-value" id="borderWidthValue">1px</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>لون الإطار:</label>
+                        <div class="color-picker">
+                            <input type="color" id="borderColor" value="#dddddd">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group" id="startNumberContainer">
+                    <label for="startNumber">الرقم البدائي للشبكة التلقائية:</label>
+                    <input type="number" id="startNumber" min="1" max="1000" value="1">
+                </div>
+
+                <h3>إعدادات التحكم بالصورة</h3>
+                <div class="form-group">
+                    <label for="imageFit">طريقة احتواء الصورة:</label>
+                    <select id="imageFit">
+                        <option value="cover">تغطية كاملة (Cover)</option>
+                        <option value="contain">احتواء كامل (Contain)</option>
+                        <option value="fill">تمطيط (Stretch)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>مقياس حجم الصورة (Zoom):</label>
+                    <div class="slider-container">
+                        <input type="range" id="imageScale" min="50" max="300" value="100">
+                        <span class="slider-value" id="imageScaleValue">100%</span>
+                    </div>
+                </div>
+                <div class="grid-config">
+                    <div class="form-group">
+                        <label>تحريك أفقي (X):</label>
+                        <div class="slider-container">
+                            <input type="range" id="imgMoveX" min="-100" max="100" value="0">
+                            <span class="slider-value" id="imgMoveXValue">0px</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>تحريك عمودي (Y):</label>
+                        <div class="slider-container">
+                            <input type="range" id="imgMoveY" min="-100" max="100" value="0">
+                            <span class="slider-value" id="imgMoveYValue">0px</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>تدوير الصورة:</label>
+                    <div class="slider-container">
+                        <input type="range" id="imageRotate" min="0" max="360" value="0">
+                        <span class="slider-value" id="imageRotateValue">0°</span>
+                    </div>
+                </div>
+
+                <h3>تخصيص الأرقام والخطوط</h3>
+                <div class="form-group">
+                    <label for="langMode">لغة ونوع الأرقام:</label>
+                    <select id="langMode">
+                        <option value="ar">عربي (١، ٢، ٣)</option>
+                        <option value="en">إنجليزي (1, 2, 3)</option>
+                        <option value="hi">هندي/فارسي (۱، ۲، ۳)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="fontFamily">نوع الخط:</label>
+                    <select id="fontFamily">
+                        <option value="'Cairo'">Cairo</option>
+                        <option value="'Lateef'">Lateef (رقعي/نسخي)</option>
+                        <option value="'Tajawal'">Tajawal</option>
+                        <option value="sans-serif">Segoe UI</option>
+                    </select>
+                </div>
+                <div class="grid-config">
+                    <div class="form-group">
+                        <label for="numberColor">لون الرقم:</label>
+                        <div class="color-picker">
+                            <input type="color" id="numberColor" value="#e74c3c">
+                        </div>
+                    </div>
+                    <div class="form-group checkbox-group" style="justify-content: center; margin-top: 20px;">
+                        <input type="checkbox" id="fontWeightBold" checked>
+                        <label for="fontWeightBold">خط عريض (Bold)</label>
+                    </div>
+                </div>
+                <div class="grid-config">
+                    <div class="form-group checkbox-group" style="margin-top: 20px;">
+                        <input type="checkbox" id="useShadow">
+                        <label for="useShadow">تفعيل ظل الرقم</label>
+                    </div>
+                    <div class="form-group">
+                        <label for="shadowColor">لون الظل:</label>
+                        <div class="color-picker">
+                            <input type="color" id="shadowColor" value="#000000">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>حجم الرقم:</label>
+                    <div class="slider-container">
+                        <input type="range" id="numberSize" min="10" max="200" value="60">
+                        <span class="slider-value" id="numberSizeValue">60px</span>
+                    </div>
+                </div>
+                <div class="grid-config">
+                    <div class="form-group">
+                        <label>موضع أفقي للأرقام (%):</label>
+                        <div class="slider-container">
+                            <input type="range" id="positionX" min="0" max="100" value="50">
+                            <span class="slider-value" id="positionXValue">50%</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>موضع عمودي للأرقام (%):</label>
+                        <div class="slider-container">
+                            <input type="range" id="positionY" min="0" max="100" value="50">
+                            <span class="slider-value" id="positionYValue">50%</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="preview-section">
+                <h2>معاينة الشبكة</h2>
+
+                <div class="preview-toggle">
+                    <button class="toggle-btn active" id="normalPreviewBtn">المعاينة الحرة</button>
+                    <button class="toggle-btn" id="a4PreviewBtn">معاينة صفحة الطباعة (A4)</button>
+                </div>
+
+                <div class="preview-container" id="normalPreview">
+                    <div class="image-grid" id="gridContainer"></div>
+                </div>
+
+                <div class="a4-preview-container" id="a4Preview">
+                    <div class="a4-page">
+                        <div class="a4-grid" id="a4GridContainer"></div>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="action-btn print-btn" id="printBtn">🖨️ طباعة وتصدير</button>
+                    <button class="action-btn save-btn" id="saveBtn">💾 حفظ التنسيقات</button>
+                    <button class="action-btn reset-btn" id="resetBtn">🔄 بدء جديد</button>
+                </div>
+            </section>
+        </main>
+    </div>
+    <div id="printVersion" class="print-version"></div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputs = [
+                'imageUpload', 'startNumber', 'totalNumbers', 'numberColor', 'numberSize',
+                'positionX', 'positionY', 'columns', 'rows', 'cellWidth', 'cellHeight',
+                'horizontalGap', 'verticalGap', 'numberMode', 'customNumbers', 'imageFit',
+                'imageScale', 'imgMoveX', 'imgMoveY', 'imageRotate', 'langMode', 'fontFamily',
+                'fontWeightBold', 'useShadow', 'shadowColor', 'borderWidth', 'borderColor'
+            ];
+
+            const dom = {};
+            inputs.forEach(id => dom[id] = document.getElementById(id));
+
+            // إضافة العناصر المفقودة
+            dom.uploadTrigger = document.getElementById('uploadTrigger');
+            dom.sequenceGroup = document.getElementById('sequenceGroup');
+            dom.customGroup = document.getElementById('customGroup');
+            dom.startNumberContainer = document.getElementById('startNumberContainer');
+
+            const gridContainer = document.getElementById('gridContainer');
+            const a4GridContainer = document.getElementById('a4GridContainer');
+            const printVersion = document.getElementById('printVersion');
+            const normalPreview = document.getElementById('normalPreview');
+            const a4Preview = document.getElementById('a4Preview');
+
+            let currentImage = null;
+            let isA4Preview = false;
+
+            const numSystems = {
+                ar: ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'],
+                en: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
+                hi: ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹']
+            };
+
+            function convertNumbers(num, lang) {
+                return num.toString().replace(/\d/g, d => numSystems[lang][d]);
+            }
+
+            function getNumbersList() {
+                const list = [];
+                const mode = dom.numberMode.value;
+                const lang = dom.langMode.value;
+
+                if (mode === 'sequence') {
+                    const total = parseInt(dom.totalNumbers.value) || 1;
+                    const start = parseInt(dom.startNumber.value) || 1;
+                    for (let i = 0; i < total; i++) {
+                        list.push(convertNumbers(start + i, lang));
+                    }
+                } else {
+                    const raw = dom.customNumbers.value.split(',');
+                    raw.forEach(n => {
+                        if (n.trim() !== "") list.push(convertNumbers(n.trim(), lang));
+                    });
+                    if (list.length === 0) list.push(convertNumbers(1, lang));
+                }
+                return list;
+            }
+
+            function updateSliderLabels() {
+                document.getElementById('cellWidthValue').textContent = dom.cellWidth.value + 'px';
+                document.getElementById('cellHeightValue').textContent = dom.cellHeight.value + 'px';
+                document.getElementById('horizontalGapValue').textContent = dom.horizontalGap.value + 'px';
+                document.getElementById('verticalGapValue').textContent = dom.verticalGap.value + 'px';
+                document.getElementById('imageScaleValue').textContent = dom.imageScale.value + '%';
+                document.getElementById('imgMoveXValue').textContent = dom.imgMoveX.value + 'px';
+                document.getElementById('imgMoveYValue').textContent = dom.imgMoveY.value + 'px';
+                document.getElementById('imageRotateValue').textContent = dom.imageRotate.value + '°';
+                document.getElementById('numberSizeValue').textContent = dom.numberSize.value + 'px';
+                document.getElementById('positionXValue').textContent = dom.positionX.value + '%';
+                document.getElementById('positionYValue').textContent = dom.positionY.value + '%';
+                document.getElementById('borderWidthValue').textContent = dom.borderWidth.value + 'px';
+            }
+
+            function configureCellImage(img) {
+                if (!currentImage) return;
+                img.src = currentImage;
+                img.style.width = dom.imageFit.value === 'fill' ? '100%' : (dom.imageFit.value === 'contain' ? '100%' :
+                    'auto');
+                img.style.height = dom.imageFit.value === 'fill' ? '100%' : (dom.imageFit.value === 'contain' ? '100%' :
+                    'auto');
+                img.style.objectFit = dom.imageFit.value;
+
+                const scale = dom.imageScale.value / 100;
+                const rotate = dom.imageRotate.value;
+                const moveX = dom.imgMoveX.value;
+                const moveY = dom.imgMoveY.value;
+
+                img.style.transform = `translate(${moveX}px, ${moveY}px) scale(${scale}) rotate(${rotate}deg)`;
+            }
+
+            function configureCellNumber(numEl) {
+                numEl.style.color = dom.numberColor.value;
+                numEl.style.fontSize = dom.numberSize.value + 'px';
+                numEl.style.fontFamily = dom.fontFamily.value;
+                numEl.style.fontWeight = dom.fontWeightBold.checked ? 'bold' : 'normal';
+                numEl.style.left = dom.positionX.value + '%';
+                numEl.style.top = dom.positionY.value + '%';
+                numEl.style.transform = 'translate(-50%, -50%)';
+
+                if (dom.useShadow.checked) {
+                    numEl.style.textShadow = `2px 2px 5px ${dom.shadowColor.value}`;
+                } else {
+                    numEl.style.textShadow = 'none';
+                }
+            }
+
+            function render() {
+                updateSliderLabels();
+                const numbers = getNumbersList();
+                const cols = parseInt(dom.columns.value) || 3;
+
+                gridContainer.innerHTML = '';
+                gridContainer.style.gridTemplateColumns = `repeat(${cols}, ${dom.cellWidth.value}px)`;
+                gridContainer.style.gap = `${dom.verticalGap.value}px ${dom.horizontalGap.value}px`;
+
+                numbers.forEach(num => {
                     const cell = document.createElement('div');
-                    cell.className = 'print-cell';
+                    cell.className = 'grid-cell';
+                    cell.style.width = dom.cellWidth.value + 'px';
+                    cell.style.height = dom.cellHeight.value + 'px';
+                    cell.style.border = `${dom.borderWidth.value}px solid ${dom.borderColor.value}`;
+
+                    if (currentImage) {
+                        const img = document.createElement('img');
+                        configureCellImage(img);
+                        cell.appendChild(img);
+                    }
+
+                    const label = document.createElement('div');
+                    label.className = 'number-overlay';
+                    label.textContent = num;
+                    configureCellNumber(label);
+
+                    cell.appendChild(label);
+                    gridContainer.appendChild(cell);
+                });
+
+                // معاينة A4
+                a4GridContainer.innerHTML = '';
+                const cellW = parseInt(dom.cellWidth.value);
+                const cellH = parseInt(dom.cellHeight.value);
+                const gapH = parseInt(dom.horizontalGap.value);
+                const gapV = parseInt(dom.verticalGap.value);
+                const maxW = 714;
+                const maxH = 1043;
+                const cellsPerRow = Math.floor(maxW / (cellW + gapH)) || 1;
+                const cellsPerCol = Math.floor(maxH / (cellH + gapV)) || 1;
+
+                a4GridContainer.style.gridTemplateColumns = `repeat(${cellsPerRow}, ${cellW}px)`;
+                a4GridContainer.style.gap = `${gapV}px ${gapH}px`;
+
+                const maxA4Cells = Math.min(numbers.length, cellsPerRow * cellsPerCol);
+                for (let i = 0; i < maxA4Cells; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'grid-cell';
                     cell.style.width = cellW + 'px';
                     cell.style.height = cellH + 'px';
                     cell.style.border = `${dom.borderWidth.value}px solid ${dom.borderColor.value}`;
@@ -777,121 +771,187 @@
                     }
 
                     const label = document.createElement('div');
-                    label.className = 'print-number';
+                    label.className = 'number-overlay';
                     label.textContent = numbers[i];
                     configureCellNumber(label);
 
                     cell.appendChild(label);
-                    gridDiv.appendChild(cell);
+                    a4GridContainer.appendChild(cell);
                 }
-                pageDiv.appendChild(gridDiv);
-                printVersion.appendChild(pageDiv);
             }
-        }
 
-        // تم استبدال الكود وتعديله هنا ليعمل على خوادم الـ GitHub بدون قيود الأمان
-        dom.imageUpload.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            
-            if (currentImage) {
-                URL.revokeObjectURL(currentImage);
-            }
-            
-            currentImage = URL.createObjectURL(file); 
-            render();
-        });
+            function buildPrintPages() {
+                printVersion.innerHTML = '';
+                const numbers = getNumbersList();
 
-        dom.uploadTrigger.addEventListener('click', () => dom.imageUpload.click());
+                const cellW = parseInt(dom.cellWidth.value);
+                const cellH = parseInt(dom.cellHeight.value);
+                const gapH = parseInt(dom.horizontalGap.value);
+                const gapV = parseInt(dom.verticalGap.value);
 
-        dom.numberMode.addEventListener('change', function() {
-            if(this.value === 'sequence') {
-                dom.sequenceGroup.classList.remove('hidden');
-                dom.startNumberContainer.classList.remove('hidden');
-                dom.customGroup.classList.add('hidden');
-            } else {
-                dom.sequenceGroup.classList.add('hidden');
-                dom.startNumberContainer.classList.add('hidden');
-                dom.customGroup.classList.remove('hidden');
-            }
-            render();
-        });
+                const maxW = 714;
+                const maxH = 1043;
 
-        const allControls = document.querySelectorAll('.control-panel input, .control-panel select, .control-panel textarea');
-        allControls.forEach(control => {
-            control.addEventListener('input', render);
-        });
+                const cellsPerRow = Math.floor(maxW / (cellW + gapH)) || 1;
+                const cellsPerCol = Math.floor(maxH / (cellH + gapV)) || 1;
+                const cellsPerPage = cellsPerRow * cellsPerCol;
 
-        document.getElementById('normalPreviewBtn').addEventListener('click', function() {
-            this.classList.add('active');
-            document.getElementById('a4PreviewBtn').classList.remove('active');
-            normalPreview.style.display = 'flex';
-            a4Preview.style.display = 'none';
-            isA4Preview = false;
-            render();
-        });
+                const totalPages = Math.ceil(numbers.length / cellsPerPage);
 
-        document.getElementById('a4PreviewBtn').addEventListener('click', function() {
-            this.classList.add('active');
-            document.getElementById('normalPreviewBtn').classList.remove('active');
-            normalPreview.style.display = 'none';
-            a4Preview.style.display = 'flex';
-            isA4Preview = true;
-            render();
-        });
+                for (let page = 0; page < totalPages; page++) {
+                    const pageDiv = document.createElement('div');
+                    pageDiv.className = 'print-page';
 
-        document.getElementById('printBtn').addEventListener('click', function() {
-            buildPrintPages();
-            setTimeout(() => { window.print(); }, 300);
-        });
+                    const gridDiv = document.createElement('div');
+                    gridDiv.className = 'print-grid';
+                    gridDiv.style.gridTemplateColumns = `repeat(${cellsPerRow}, ${cellW}px)`;
+                    gridDiv.style.gap = `${gapV}px ${gapH}px`;
 
-        document.getElementById('saveBtn').addEventListener('click', function() {
-            const configData = {};
-            inputs.forEach(id => {
-                if(id !== 'imageUpload') {
-                    configData[id] = dom[id].type === 'checkbox' ? dom[id].checked : dom[id].value;
+                    const startIdx = page * cellsPerPage;
+                    const endIdx = Math.min(startIdx + cellsPerPage, numbers.length);
+
+                    for (let i = startIdx; i < endIdx; i++) {
+                        const cell = document.createElement('div');
+                        cell.className = 'print-cell';
+                        cell.style.width = cellW + 'px';
+                        cell.style.height = cellH + 'px';
+                        cell.style.border = `${dom.borderWidth.value}px solid ${dom.borderColor.value}`;
+
+                        if (currentImage) {
+                            const img = document.createElement('img');
+                            configureCellImage(img);
+                            cell.appendChild(img);
+                        }
+
+                        const label = document.createElement('div');
+                        label.className = 'print-number';
+                        label.textContent = numbers[i];
+                        configureCellNumber(label);
+
+                        cell.appendChild(label);
+                        gridDiv.appendChild(cell);
+                    }
+                    pageDiv.appendChild(gridDiv);
+                    printVersion.appendChild(pageDiv);
                 }
+            }
+
+            // أحداث رفع الصورة
+            dom.imageUpload.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                if (currentImage) {
+                    URL.revokeObjectURL(currentImage);
+                }
+
+                currentImage = URL.createObjectURL(file);
+                render();
             });
-            localStorage.setItem('grid_app_config', JSON.stringify(configData));
-            alert('✅ تم حفظ كافة إعدادات التنسيقات والخطوط بنجاح!');
-        });
 
-        function loadSavedConfig() {
-            const saved = localStorage.getItem('grid_app_config');
-            if(saved) {
-                const configData = JSON.parse(saved);
-                Object.keys(configData).forEach(id => {
-                    if(dom[id]) {
-                        if(dom[id].type === 'checkbox') dom[id].checked = configData[id];
-                        else dom[id].value = configData[id];
+            dom.uploadTrigger.addEventListener('click', () => dom.imageUpload.click());
+
+            // تبديل نظام الأرقام
+            dom.numberMode.addEventListener('change', function() {
+                if (this.value === 'sequence') {
+                    dom.sequenceGroup.classList.remove('hidden');
+                    dom.startNumberContainer.classList.remove('hidden');
+                    dom.customGroup.classList.add('hidden');
+                } else {
+                    dom.sequenceGroup.classList.add('hidden');
+                    dom.startNumberContainer.classList.add('hidden');
+                    dom.customGroup.classList.remove('hidden');
+                }
+                render();
+            });
+
+            // ربط جميع عناصر التحكم بالتحديث
+            const allControls = document.querySelectorAll('.control-panel input, .control-panel select, .control-panel textarea');
+            allControls.forEach(control => {
+                control.addEventListener('input', render);
+            });
+
+            // تبديل المعاينة
+            document.getElementById('normalPreviewBtn').addEventListener('click', function() {
+                this.classList.add('active');
+                document.getElementById('a4PreviewBtn').classList.remove('active');
+                normalPreview.style.display = 'flex';
+                a4Preview.style.display = 'none';
+                isA4Preview = false;
+                render();
+            });
+
+            document.getElementById('a4PreviewBtn').addEventListener('click', function() {
+                this.classList.add('active');
+                document.getElementById('normalPreviewBtn').classList.remove('active');
+                normalPreview.style.display = 'none';
+                a4Preview.style.display = 'flex';
+                isA4Preview = true;
+                render();
+            });
+
+            // طباعة
+            document.getElementById('printBtn').addEventListener('click', function() {
+                buildPrintPages();
+                setTimeout(() => { window.print(); }, 300);
+            });
+
+            // حفظ التنسيقات
+            document.getElementById('saveBtn').addEventListener('click', function() {
+                const configData = {};
+                inputs.forEach(id => {
+                    if (id !== 'imageUpload') {
+                        configData[id] = dom[id].type === 'checkbox' ? dom[id].checked : dom[id].value;
                     }
                 });
-                dom.numberMode.dispatchEvent(new Event('change'));
-            }
-        }
+                localStorage.setItem('grid_app_config', JSON.stringify(configData));
+                alert('✅ تم حفظ كافة إعدادات التنسيقات والخطوط بنجاح!');
+            });
 
-        document.getElementById('resetBtn').addEventListener('click', function() {
-            if(confirm('هل أنت متأكد من إعادة تعيين كافة البيانات؟')) {
-                localStorage.removeItem('grid_app_config');
-                window.location.reload();
+            function loadSavedConfig() {
+                const saved = localStorage.getItem('grid_app_config');
+                if (saved) {
+                    const configData = JSON.parse(saved);
+                    Object.keys(configData).forEach(id => {
+                        if (dom[id]) {
+                            if (dom[id].type === 'checkbox') dom[id].checked = configData[id];
+                            else dom[id].value = configData[id];
+                        }
+                    });
+                    dom.numberMode.dispatchEvent(new Event('change'));
+                }
             }
+
+            // إعادة تعيين
+            document.getElementById('resetBtn').addEventListener('click', function() {
+                if (confirm('هل أنت متأكد من إعادة تعيين كافة البيانات؟')) {
+                    localStorage.removeItem('grid_app_config');
+                    window.location.reload();
+                }
+            });
+
+            // سحب وإفلات
+            const uploadSection = document.querySelector('.upload-section');
+            uploadSection.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.style.backgroundColor = '#d4edff';
+            });
+            uploadSection.addEventListener('dragleave', function() {
+                this.style.backgroundColor = '#e8f4fc';
+            });
+            uploadSection.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.style.backgroundColor = '#e8f4fc';
+                if (e.dataTransfer.files.length) {
+                    dom.imageUpload.files = e.dataTransfer.files;
+                    dom.imageUpload.dispatchEvent(new Event('change'));
+                }
+            });
+
+            // تحميل الإعدادات المحفوظة
+            loadSavedConfig();
+            render();
         });
-
-        const uploadSection = document.querySelector('.upload-section');
-        uploadSection.addEventListener('dragover', function(e) { e.preventDefault(); this.style.backgroundColor = '#d4edff'; });
-        uploadSection.addEventListener('dragleave', function() { this.style.backgroundColor = '#e8f4fc'; });
-        uploadSection.addEventListener('drop', function(e) {
-            e.preventDefault();
-            this.style.backgroundColor = '#e8f4fc';
-            if (e.dataTransfer.files.length) {
-                dom.imageUpload.files = e.dataTransfer.files;
-                dom.imageUpload.dispatchEvent(new Event('change'));
-            }
-        });
-
-        loadSavedConfig();
-        render();
-    });  
-</script>  
-</body>  
+    </script>
+</body>
 </html>
