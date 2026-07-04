@@ -284,13 +284,11 @@
         }  
         .hidden { display: none; }  
 
-        /* شاشات الاستجابة */
         @media (max-width: 1100px) {  
             .app-content { flex-direction: column; }  
             .preview-section { width: 100%; }  
         }  
           
-        /* تنسيقات الطباعة الاحترافية */  
         @media print {  
             body, html { background: white !important; padding: 0; margin: 0; }  
             .container, .control-panel, header, .preview-toggle, .action-buttons, .preview-container, .a4-preview-container {  
@@ -576,7 +574,6 @@
 
 <script>  
     document.addEventListener('DOMContentLoaded', function() {  
-        // ربط عناصر لوحة التحكم
         const inputs = [
             'imageUpload', 'startNumber', 'totalNumbers', 'numberColor', 'numberSize',
             'positionX', 'positionY', 'columns', 'rows', 'cellWidth', 'cellHeight',
@@ -597,7 +594,6 @@
         let currentImage = null;  
         let isA4Preview = false;  
 
-        // أنظمة الأرقام المختلفة
         const numSystems = {
             ar: ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'],
             en: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
@@ -608,7 +604,6 @@
             return num.toString().replace(/\d/g, d => numSystems[lang][d]);  
         }  
 
-        // جلب قائمة الأرقام بناءً على اختيار المستخدم (تلقائي أو مخصص)
         function getNumbersList() {
             const list = [];
             const mode = dom.numberMode.value;
@@ -630,7 +625,6 @@
             return list;
         }
 
-        // تحديث قيم العدادات والنصوص في الواجهة
         function updateSliderLabels() {
             document.getElementById('cellWidthValue').textContent = dom.cellWidth.value + 'px';
             document.getElementById('cellHeightValue').textContent = dom.cellHeight.value + 'px';
@@ -646,7 +640,6 @@
             document.getElementById('borderWidthValue').textContent = dom.borderWidth.value + 'px';
         }
 
-        // دالة بناء وتصميم الصورة بداخل الخلية مع كافة التأثيرات المتطورة
         function configureCellImage(img) {
             if (!currentImage) return;
             img.src = currentImage;
@@ -654,7 +647,6 @@
             img.style.height = dom.imageFit.value === 'fill' ? '100%' : (dom.imageFit.value === 'contain' ? '100%' : 'auto');
             img.style.objectFit = dom.imageFit.value;
             
-            // تطبيق الفلاتر والتحريك والحجم المخصص
             const scale = dom.imageScale.value / 100;
             const rotate = dom.imageRotate.value;
             const moveX = dom.imgMoveX.value;
@@ -663,7 +655,6 @@
             img.style.transform = `translate(${moveX}px, ${moveY}px) scale(${scale}) rotate(${rotate}deg)`;
         }
 
-        // دالة تنسيق الأرقام (الخط، الحجم، الموضع، والظل)
         function configureCellNumber(numEl) {
             numEl.style.color = dom.numberColor.value;
             numEl.style.fontSize = dom.numberSize.value + 'px';
@@ -680,13 +671,11 @@
             }
         }
 
-        // إنشاء وتحديث الشبكات بالكامل
         function render() {
             updateSliderLabels();
             const numbers = getNumbersList();
             const cols = parseInt(dom.columns.value) || 3;
             
-            // 1. تحديث المعاينة الحرة العادية
             gridContainer.innerHTML = '';
             gridContainer.style.gridTemplateColumns = `repeat(${cols}, ${dom.cellWidth.value}px)`;
             gridContainer.style.gap = `${dom.verticalGap.value}px ${dom.horizontalGap.value}px`;
@@ -713,7 +702,6 @@
                 gridContainer.appendChild(cell);
             });
 
-            // 2. تحديث معاينة صفحة A4
             a4GridContainer.innerHTML = '';
             const cellsPerRow = Math.floor(714 / (parseInt(dom.cellWidth.value) + parseInt(dom.horizontalGap.value))) || 1;
             const cellsPerCol = Math.floor(1043 / (parseInt(dom.cellHeight.value) + parseInt(dom.verticalGap.value))) || 1;
@@ -745,7 +733,6 @@
             }
         }
 
-        // إنشاء مستند الطباعة المتعدد الصفحات تلقائياً
         function buildPrintPages() {
             printVersion.innerHTML = '';
             const numbers = getNumbersList();
@@ -755,7 +742,6 @@
             const gapH = parseInt(dom.horizontalGap.value);
             const gapV = parseInt(dom.verticalGap.value);
 
-            // المساحة المتاحة الفعّالة لورقة الـ A4 في الطباعة بالبكسل تقريباً
             const maxW = 714; 
             const maxH = 1043;
 
@@ -803,16 +789,17 @@
             }
         }
 
-        // مراقبة وتحديث الأحداث (Event Listeners)
+        // تم استبدال الكود وتعديله هنا ليعمل على خوادم الـ GitHub بدون قيود الأمان
         dom.imageUpload.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                currentImage = evt.target.result;
-                render();
-            };
-            reader.readAsDataURL(file);
+            
+            if (currentImage) {
+                URL.revokeObjectURL(currentImage);
+            }
+            
+            currentImage = URL.createObjectURL(file); 
+            render();
         });
 
         dom.uploadTrigger.addEventListener('click', () => dom.imageUpload.click());
@@ -830,13 +817,11 @@
             render();
         });
 
-        // تشغيل الرندرة فور حدوث أي تغيير في المدخلات
         const allControls = document.querySelectorAll('.control-panel input, .control-panel select, .control-panel textarea');
         allControls.forEach(control => {
             control.addEventListener('input', render);
         });
 
-        // تبديل أزرار المعاينة
         document.getElementById('normalPreviewBtn').addEventListener('click', function() {
             this.classList.add('active');
             document.getElementById('a4PreviewBtn').classList.remove('active');
@@ -855,13 +840,11 @@
             render();
         });
 
-        // تنفيذ الطباعة المباشرة
         document.getElementById('printBtn').addEventListener('click', function() {
             buildPrintPages();
             setTimeout(() => { window.print(); }, 300);
         });
 
-        // حفظ التنسيقات في الذاكرة المحلية (Local Storage)
         document.getElementById('saveBtn').addEventListener('click', function() {
             const configData = {};
             inputs.forEach(id => {
@@ -873,7 +856,6 @@
             alert('✅ تم حفظ كافة إعدادات التنسيقات والخطوط بنجاح!');
         });
 
-        // استعادة البيانات المحفوظة إن وجدت
         function loadSavedConfig() {
             const saved = localStorage.getItem('grid_app_config');
             if(saved) {
@@ -884,12 +866,10 @@
                         else dom[id].value = configData[id];
                     }
                 });
-                // محاكاة حدث لتحديث القوائم المنسدلة والواجهات التابعة لها
                 dom.numberMode.dispatchEvent(new Event('change'));
             }
         }
 
-        // إعادة تشغيل التطبيق بالكامل من البداية
         document.getElementById('resetBtn').addEventListener('click', function() {
             if(confirm('هل أنت متأكد من إعادة تعيين كافة البيانات؟')) {
                 localStorage.removeItem('grid_app_config');
@@ -897,7 +877,6 @@
             }
         });
 
-        // دعم ميزة السحب والإفلات للصورة
         const uploadSection = document.querySelector('.upload-section');
         uploadSection.addEventListener('dragover', function(e) { e.preventDefault(); this.style.backgroundColor = '#d4edff'; });
         uploadSection.addEventListener('dragleave', function() { this.style.backgroundColor = '#e8f4fc'; });
@@ -910,7 +889,6 @@
             }
         });
 
-        // تفعيل الإعدادات الأولية والرندرة فور فتح المتصفح
         loadSavedConfig();
         render();
     });  
